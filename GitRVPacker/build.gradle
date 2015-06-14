@@ -1,0 +1,40 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'gradle-one-jar'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+         classpath 'com.github.rholder:gradle-one-jar:1.0.4'
+    }
+}
+
+version = "0.0.1"
+group= "pl.grm.rvpacker"
+
+description = 'Simple program to pack/unpack RPG Maker project files from/to yaml files to commit to repository'
+archivesBaseName = "GitRVPacker"
+mainClassName = 'pl.grm.rvpacker.MainPacker'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    compile group: 'org.ini4j', name: 'ini4j', version: '0.5.2'
+    compile 'com.google.guava:guava:18.0'
+    testCompile 'junit:junit:4.11'
+}
+
+task execJar(type: OneJar) {
+    mainClass = mainClassName
+    archiveName = archivesBaseName+"-V"+version+".jar"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
