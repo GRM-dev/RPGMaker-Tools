@@ -145,38 +145,43 @@ public class MainPacker {
 	 * Looking for Ruby path and rvpacker gem there
 	 */
 	private void tryFindRuby() {
-		String path = "";
+		String path = null;
 		boolean rubyPathFound = false;
 		boolean rvpackerFound = false;
 		Map<String, String> envs = System.getenv();
 		if (envs.containsKey("RUBY")) {
 			String env = envs.get("RUBY");
-			if (rubyPathFound = findRuby(env)) {
-				rvpackerFound = findRVPacker(env);
+			if (rubyPathFound = (path = findRuby(env)) != null) {
+				rvpackerFound = findRVPacker(path);
 			}
 		}
 		if (!rvpackerFound && envs.containsKey("RUBYPATH")) {
 			String env = envs.get("RUBYPATH");
-			if (rubyPathFound = findRuby(env)) {
-				rvpackerFound = findRVPacker(env);
+			if (rubyPathFound = (path = findRuby(env)) != null) {
+				rvpackerFound = findRVPacker(path);
 			}
 		}
-		if (!rvpackerFound && envs.containsKey("PATH")) {
+		if (!rvpackerFound && (envs.containsKey("PATH") || envs.containsKey("Path"))) {
 			String env = envs.get("PATH");
-			if (rubyPathFound = findRuby(env)) {
-				rvpackerFound = findRVPacker(env);
+			if (env == null) {
+				env = envs.get("Path");
+			}
+			if (rubyPathFound = (path = findRuby(env)) != null) {
+				rvpackerFound = findRVPacker(path);
 			}
 		}
 
-		if (rubyPathFound) {
+		if (rubyPathFound && path != null && path.length() > 3) {
 			if (rvpackerFound) {
-				setConfigValue(ConfigId.RUBY_PATH, path);
+				setConfigValue(ConfigId.RUBY_PATH, new String(path));
 			} else {
-				JOptionPane.showMessageDialog(appFrame, "Can't find gem rvpacker in Ruby path",
+				JOptionPane.showMessageDialog(appFrame,
+						"Can't find gem rvpacker in Ruby path.\n  Set correct path in settings.",
 						"Ruby found, but can't find gems", JOptionPane.WARNING_MESSAGE);
 			}
 		} else {
-			JOptionPane.showMessageDialog(appFrame, "Wrong Ruby Path or no path in ENV", "Ruby path not found",
+			JOptionPane.showMessageDialog(appFrame,
+					"Wrong Ruby Path or no path in ENV.\n Set correct path in settings.", "Ruby path not found",
 					JOptionPane.WARNING_MESSAGE);
 		}
 	}
@@ -185,24 +190,24 @@ public class MainPacker {
 	 * @param env
 	 * @return
 	 */
-	private boolean findRuby(String env) {
+	private String findRuby(String env) {
 		String[] paths = env.split(";");
 		for (String path : paths) {
 			File file;
-			if ((file = new File(path)).exists() && file.isDirectory() && new File(path + "\\ruby.exe").exists()) { return true; }
+			if ((file = new File(path)).exists() && file.isDirectory() && new File(path + "\\ruby.exe").exists()) { return path; }
 		}
-		return false;
+		return null;
 	}
 
 	/**
 	 * @param env
 	 * @return
 	 */
-	private boolean findRVPacker(String env) {
-		String[] paths = env.split(";");
-		for (String path : paths) {
-			if (new File(path).exists() && new File(path + "\\rvpacker.bat").exists()) { return true; }
-		}
+	private boolean findRVPacker(String path) {
+		boolean f1 = new File(path).exists();
+		boolean f2 = new File(path + "\\rvpacker.bat").exists();
+		System.out.println(f1 + "|" + f2);
+		if (f1 && f2) { return true; }
 		return false;
 	}
 
