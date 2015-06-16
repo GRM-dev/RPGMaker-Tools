@@ -9,6 +9,8 @@ import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+import pl.grm.rvpacker.Runner.RVPackerType;
+
 /**
  * @author Levvy055
  *
@@ -29,6 +31,14 @@ public class Executor {
 		this.logger = packer.getLogger();
 	}
 
+	/**
+	 * appends text msg to JTextPane, logger and console
+	 * 
+	 * @param msg
+	 *            message to append
+	 * @param level
+	 *            (0-Normal,1-Warn,2-Error,3-Debug)
+	 */
 	synchronized void append(String msg, int level) {
 		Color color = null;
 		switch (level) {
@@ -68,18 +78,28 @@ public class Executor {
 			e.printStackTrace();
 		}
 		catch (IllegalArgumentException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 	}
 
+	/**
+	 * Runs Pack Script
+	 * 
+	 * @param jComponents
+	 */
 	public void runPackScript(JComponent[] jComponents) {
-		runner = new Runner(this, "pack", jComponents);
+		runner = new Runner(this, RVPackerType.PACK, jComponents);
 		runner.execute();
 	}
 
+	/**
+	 * Runs Unpack script
+	 * 
+	 * @param jComponents
+	 */
 	public void runUnpackScript(JComponent[] jComponents) {
-		runner = new Runner(this, "unpack", jComponents);
+		runner = new Runner(this, RVPackerType.UNPACK, jComponents);
 		runner.execute();
 	}
 
@@ -95,26 +115,44 @@ public class Executor {
 		}
 	}
 
+	/**
+	 * 
+	 * @return JTextField if exists
+	 */
 	public JTextPane getOutputConsole() {
 		return outputConsole;
 	}
 
+	/**
+	 * 
+	 * @param outputConsole
+	 *            set it to append text to it on GUI
+	 */
 	public void setOutputConsole(JTextPane outputConsole) {
 		this.outputConsole = outputConsole;
 	}
 
 	/**
 	 * @param key
+	 *            key associated with value
 	 * @return
 	 */
 	public String getConfigValue(ConfigId key) {
 		return packer.getConfigValue(key);
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public AppFrame getAppFrame() {
 		return appFrame;
 	}
 
+	/**
+	 * 
+	 * @param appFrame
+	 */
 	public void setAppFrame(AppFrame appFrame) {
 		this.appFrame = appFrame;
 	}

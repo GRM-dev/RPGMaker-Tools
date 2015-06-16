@@ -78,7 +78,7 @@ public class SettingsDialog extends JDialog {
 				};
 			};
 			chooser.setDialogTitle("Choose Ruby bin folder and check if you have rvpacker there");
-			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
 			chooser.addActionListener(e -> {
 				if (e.getActionCommand().equals("WRONG_SELECTION")) {
@@ -94,6 +94,9 @@ public class SettingsDialog extends JDialog {
 					File dir = chooser.getSelectedFile();
 					packer.updateConfigValue(ConfigId.RUBY_PATH, dir.getAbsolutePath());
 					setWarningMessage("");
+					JOptionPane.showMessageDialog(SettingsDialog.this, "Saved", "Saved",
+							JOptionPane.INFORMATION_MESSAGE);
+					tF_RubyPath.setText(packerA.getConfigValue(ConfigId.RUBY_PATH));
 				}
 			});
 			contentPanel.add(btnChange);
@@ -104,7 +107,6 @@ public class SettingsDialog extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("Apply");
-				okButton.addActionListener(e -> {});
 				okButton.addActionListener(e -> {
 					setWarningMessage("");
 					this.dispose();

@@ -4,7 +4,6 @@
 package pl.grm.rvpacker;
 
 import java.awt.EventQueue;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -18,25 +17,25 @@ public class MainPacker {
 	public static final String PATH_RES = EXECUTABLE_PATH + "\\src\\main\\resources\\";
 	public static final String CONFIG_FILE_NAME = "config.ini";
 	public static final String LOGGER_FILE_NAME = "yrvPacker.log";
-	private static String CURRENT_JAR;
 	private Logger logger;
 	private Executor executor;
 	/** Key - Identificator of config, Value - config Value */
 	private HashMap<ConfigId, String> config;
+	private HashMap<ArgType, HashMap<String, String>> argsMap;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		try {
-			CURRENT_JAR = FileOperation.getCurrentJarPath(MainPacker.class);
-		}
-		catch (UnsupportedEncodingException e2) {
-			e2.printStackTrace();
-		}
 		MainPacker packer = new MainPacker();
-		packer.init();
-		packer.start();
+		if (args != null && args.length > 0) {
+			packer.parseArgs(args);
+			packer.verify();
+
+		} else {
+			packer.init();
+			packer.start();
+		}
 	}
 
 	/**
@@ -44,6 +43,66 @@ public class MainPacker {
 	 */
 	private MainPacker() {
 		config = createDefaultConfig();
+		argsMap = new HashMap<>();
+	}
+
+	/**
+	 * Collects args to appropriate list and save the in argsMap
+	 * 
+	 * @param args
+	 */
+	private void parseArgs(String[] args) {
+		HashMap<String, String> argsList = new HashMap<String, String>();
+		HashMap<String, String> optsList = new HashMap<String, String>();
+		HashMap<String, String> doubleOptsList = new HashMap<String, String>();
+		for (int i = 0; i < args.length; i++) {
+			switch (args[i].charAt(0)) {
+				case '-' :
+					if (args[i].length() < 2) throw new IllegalArgumentException("Not a valid argument: " + args[i]);
+					if (args[i].charAt(1) == '-') {
+						if (args[i].length() < 3)
+							throw new IllegalArgumentException("Not a valid argument: " + args[i]);
+						doubleOptsList.put(args[i].substring(2, args[i].length()), "");
+					} else {
+						if (args.length - 1 == i) throw new IllegalArgumentException("Expected arg after: " + args[i]);
+						optsList.put(args[i], args[i + 1]);
+						i++;
+					}
+					break;
+				default :
+					argsList.put(args[i], "");
+					break;
+			}
+		}
+		argsMap.put(ArgType.ARGS, argsList);
+		argsMap.put(ArgType.OPTS, optsList);
+		argsMap.put(ArgType.DOUBLE_OPTS, doubleOptsList);
+		Iterator<String> it1 = optsList.keySet().iterator();
+		while (it1.hasNext()) {
+			String arg = it1.next();
+			System.out.println(arg + ": " + argsList.get(arg));
+		}
+		System.out.println("____");
+		Iterator<String> it2 = argsList.keySet().iterator();
+		while (it2.hasNext()) {
+			String arg = it2.next();
+			System.out.println(arg);
+		}
+		System.out.println("____");
+		Iterator<String> it3 = doubleOptsList.keySet().iterator();
+		while (it3.hasNext()) {
+			String arg = it3.next();
+			System.out.println(arg);
+		}
+	}
+
+	/**
+	 * 
+	 */
+	private boolean verify() {
+		HashMap<String, String> optsMap = argsMap.get(ArgType.OPTS);
+		if (!optsMap.containsKey("p") || !optsMap.containsKey("r")) return false;
+		return true;
 	}
 
 	/**
@@ -141,5 +200,11 @@ public class MainPacker {
 	 */
 	public String getConfigValue(ConfigId key) {
 		return config.get(key);
+	}
+
+	public enum ArgType {
+		ARGS,
+		OPTS,
+		DOUBLE_OPTS
 	}
 }
