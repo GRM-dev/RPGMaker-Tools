@@ -80,7 +80,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 							JOptionPane.showMessageDialog(pB, "Executed " + type.toString().toLowerCase()
 									+ " successfully", "Done!" + exit, JOptionPane.INFORMATION_MESSAGE);
 						else {
-							JOptionPane.showMessageDialog(pB, "Error! Return exit code: ", "Exception occured",
+							JOptionPane.showMessageDialog(pB, "Error! Return exit code: " + exit, "Exception occured",
 									JOptionPane.WARNING_MESSAGE);
 						}
 					}

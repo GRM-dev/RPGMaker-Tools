@@ -92,7 +92,7 @@ public class SettingsDialog extends JDialog {
 			btnChange.addActionListener(e -> {
 				if (chooser.showOpenDialog(SettingsDialog.this) == JFileChooser.APPROVE_OPTION) {
 					File dir = chooser.getSelectedFile();
-					packer.updateConfigValue(ConfigId.RUBY_PATH, dir.getAbsolutePath());
+					packer.setConfigValue(ConfigId.RUBY_PATH, dir.getAbsolutePath());
 					setWarningMessage("");
 					JOptionPane.showMessageDialog(SettingsDialog.this, "Saved", "Saved",
 							JOptionPane.INFORMATION_MESSAGE);

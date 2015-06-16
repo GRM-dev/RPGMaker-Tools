@@ -4,8 +4,11 @@
 package pl.grm.rvpacker;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
+
+import javax.swing.JOptionPane;
 
 /**
  * @author Levvy055
@@ -22,6 +25,8 @@ public class MainPacker {
 	/** Key - Identificator of config, Value - config Value */
 	private HashMap<ConfigId, String> config;
 	private HashMap<ArgType, HashMap<String, String>> argsMap;
+	private boolean needsSave;
+	private AppFrame appFrame;
 
 	/**
 	 * @param args
@@ -119,13 +124,86 @@ public class MainPacker {
 				if (!newValue.equals(oldValue)) {
 					logger.info("Read " + key + ": " + newValue + " (default: "
 							+ (oldValue.isEmpty() ? "\"\"" : oldValue) + ")");
-					updateConfigValue(key, newValue);
+					setConfigValue(key, newValue);
+					needsSave = false;
 				}
 			}
 		} else {
 			FileOperation.saveConfig(config);
 		}
 		executor = new Executor(this);
+		appFrame = new AppFrame(this);
+		String path;
+		if ((path = getConfigValue(ConfigId.RUBY_PATH)) == null || !new File(path).exists()
+				|| !new File(path + "\\rvpacker.bat").exists()) {
+			tryFindRuby();
+			save();
+		}
+	}
+
+	/**
+	 * Looking for Ruby path and rvpacker gem there
+	 */
+	private void tryFindRuby() {
+		String path = "";
+		boolean rubyPathFound = false;
+		boolean rvpackerFound = false;
+		Map<String, String> envs = System.getenv();
+		if (envs.containsKey("RUBY")) {
+			String env = envs.get("RUBY");
+			if (rubyPathFound = findRuby(env)) {
+				rvpackerFound = findRVPacker(env);
+			}
+		}
+		if (!rvpackerFound && envs.containsKey("RUBYPATH")) {
+			String env = envs.get("RUBYPATH");
+			if (rubyPathFound = findRuby(env)) {
+				rvpackerFound = findRVPacker(env);
+			}
+		}
+		if (!rvpackerFound && envs.containsKey("PATH")) {
+			String env = envs.get("PATH");
+			if (rubyPathFound = findRuby(env)) {
+				rvpackerFound = findRVPacker(env);
+			}
+		}
+
+		if (rubyPathFound) {
+			if (rvpackerFound) {
+				setConfigValue(ConfigId.RUBY_PATH, path);
+			} else {
+				JOptionPane.showMessageDialog(appFrame, "Can't find gem rvpacker in Ruby path",
+						"Ruby found, but can't find gems", JOptionPane.WARNING_MESSAGE);
+			}
+		} else {
+			JOptionPane.showMessageDialog(appFrame, "Wrong Ruby Path or no path in ENV", "Ruby path not found",
+					JOptionPane.WARNING_MESSAGE);
+		}
+	}
+
+	/**
+	 * @param env
+	 * @return
+	 */
+	private boolean findRuby(String env) {
+		String[] paths = env.split(";");
+		for (String path : paths) {
+			File file;
+			if ((file = new File(path)).exists() && file.isDirectory() && new File(path + "\\ruby.exe").exists()) { return true; }
+		}
+		return false;
+	}
+
+	/**
+	 * @param env
+	 * @return
+	 */
+	private boolean findRVPacker(String env) {
+		String[] paths = env.split(";");
+		for (String path : paths) {
+			if (new File(path).exists() && new File(path + "\\rvpacker.bat").exists()) { return true; }
+		}
+		return false;
 	}
 
 	/**
@@ -134,9 +212,8 @@ public class MainPacker {
 	private void start() {
 		EventQueue.invokeLater(() -> {
 			try {
-				AppFrame frame = new AppFrame(this);
-				frame.applyConfig(config);
-				frame.setVisible(true);
+				appFrame.applyConfig(config);
+				appFrame.setVisible(true);
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -163,8 +240,9 @@ public class MainPacker {
 	 * @param value
 	 *            new value to override previous one
 	 */
-	public void updateConfigValue(ConfigId key, String value) {
+	public void setConfigValue(ConfigId key, String value) {
 		if (value != null) {
+			needsSave = true;
 			config.put(key, value);
 		}
 	}
@@ -172,8 +250,10 @@ public class MainPacker {
 	/**
 	 * Save config and ammends all actions when closing
 	 */
-	public void close() {
-		FileOperation.saveConfig(config);
+	public void save() {
+		if (needsSave) {
+			FileOperation.saveConfig(config);
+		}
 	}
 
 	/**

@@ -150,21 +150,28 @@ public class AppFrame extends JFrame {
 		topInside_Panel.add(button_Panel, BorderLayout.CENTER);
 		button_Panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		btnPack = new JButton("Pack (YAML->RPG)");
+		btnPack = new JButton("Pack (YAML->RPG)|After Pull");
 		btnPack.setEnabled(false);
 		btnPack.setBackground(btnBgColor);
 		btnPack.addActionListener(e -> {
-			if (packer.getExecutor().canExecute())
+			if (packer.getExecutor().canExecute()
+					&& JOptionPane.showConfirmDialog(this, "You want to override RPG Maker files with ones from YAML",
+							"Are you sure?", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
 				packer.getExecutor().runPackScript(new JComponent[]{btnPack, btnUnpack, btnLoad, progressBar});
+			}
 		});
 		button_Panel.add(btnPack);
 
-		btnUnpack = new JButton("Unpack (RPG->YAML)");
+		btnUnpack = new JButton("Unpack (RPG->YAML)|Before Push");
 		btnUnpack.setEnabled(false);
 		btnUnpack.setBackground(btnBgColor);
 		btnUnpack.addActionListener(e -> {
-			if (packer.getExecutor().canExecute())
+			if (packer.getExecutor().canExecute()
+					&& JOptionPane.showConfirmDialog(this,
+							"You want to override YAML files with ones from RPG Maker files", "Are you sure?",
+							JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.OK_OPTION) {
 				packer.getExecutor().runUnpackScript(new JComponent[]{btnPack, btnUnpack, btnLoad, progressBar});
+			}
 		});
 		button_Panel.add(btnUnpack);
 
@@ -218,9 +225,11 @@ public class AppFrame extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				System.out.println("Closing ...");
 				String projectDirPath = tF_SelectedProject.getText();
-				if (projectDirPath != null && projectDirPath.contains(".rvproj2"))
-					packer.updateConfigValue(ConfigId.PROJECTFILE, projectDirPath);
-				packer.close();
+				if (projectDirPath != null && projectDirPath.contains(".rvproj2")
+						&& !projectDirPath.equals(packer.getConfigValue(ConfigId.PROJECTFILE))) {
+					packer.setConfigValue(ConfigId.PROJECTFILE, projectDirPath);
+				}
+				packer.save();
 			}
 
 			@Override
