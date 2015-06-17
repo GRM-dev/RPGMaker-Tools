@@ -34,7 +34,12 @@ public class FileOperation {
 	public static Logger setupLogger(String fileName) throws IllegalArgumentException {
 		logger = Logger.getLogger(fileName);
 		try {
-			FileHandler fileHandler = new FileHandler(MainPacker.EXECUTABLE_PATH + fileName, 1048476, 1, true);
+			String logFilename = MainPacker.EXECUTABLE_PATH + fileName;
+			File logFile = new File(logFilename);
+			if (logFile.exists() && logFile.length() >= 51200) {
+				logFile.renameTo(new File(logFilename + "_old"));
+			}
+			FileHandler fileHandler = new FileHandler(logFilename, 1048476, 1, true);
 			logger.addHandler(fileHandler);
 			SimpleFormatter formatter = new SimpleFormatter();
 			fileHandler.setFormatter(formatter);

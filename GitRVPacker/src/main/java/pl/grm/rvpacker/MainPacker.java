@@ -10,8 +10,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
-import pl.grm.rvpacker.Runner.RVPAction;
-
 /**
  * @author Levvy055
  *
@@ -45,6 +43,9 @@ public class MainPacker {
 					if (rubyPath != null && new File(rubyPath).exists()) {
 						if (new File(rubyPath + "\\rvpacker.bat").exists()) {
 							packer.setExecutor(new Executor(packer));
+							Backuper backup = new Backuper(new File(packer.argsMap.get(ArgType.OPTS).get("-p")));
+							String actionS = packer.argsMap.get(ArgType.OPTS).get("-a");
+							backup.makeBackup(RVPAction.valueOf(actionS.toUpperCase()));
 							int exitValue = packer.execute();
 							if (exitValue == 0) {
 								System.out.println("Looks like completed.");

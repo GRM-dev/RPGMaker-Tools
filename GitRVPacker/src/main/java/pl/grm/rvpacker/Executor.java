@@ -9,8 +9,6 @@ import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import pl.grm.rvpacker.Runner.RVPAction;
-
 /**
  * @author Levvy055
  *

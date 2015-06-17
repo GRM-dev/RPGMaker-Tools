@@ -3,6 +3,7 @@ package pl.grm.rvpacker;
 import java.awt.HeadlessException;
 import java.io.*;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 import javax.swing.*;
 
@@ -96,14 +97,23 @@ public class Runner extends SwingWorker<Integer, Void> {
 		}
 	}
 
-	private int runScript(RVPAction type) throws Exception {
+	private int runScript(RVPAction actionType) throws Exception {
 		int exitV = 0;
 		try {
 			setProgress(20);
 			File projectDir = new File(FileOperation.getFile(executor.getConfigValue(ConfigId.PROJECTFILE)).getParent());
 			executor.append("Project directory: " + projectDir.getAbsolutePath(), 0);
-			String envPacker = executor.getConfigValue(ConfigId.RUBY_PATH);
-			exitV = runScript(type, projectDir, envPacker, true);
+			String rubyPath = executor.getConfigValue(ConfigId.RUBY_PATH);
+			Backuper backup = new Backuper(projectDir);
+			try {
+				backup.makeBackup(actionType);
+			}
+			catch (Exception e) {
+				executor.getLogger().log(Level.SEVERE, "Backup error", e);
+				e.printStackTrace();
+				executor.append(e.getMessage(), 2);
+			}
+			exitV = runScript(actionType, projectDir, rubyPath, true);
 		}
 		catch (IOException e1) {
 			e1.printStackTrace();
@@ -111,7 +121,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 		return exitV;
 	}
 
-	public int runScript(RVPAction type, File projectDir, String rubyPath, boolean hasGui) throws IOException,
+	public int runScript(RVPAction actionType, File projectDir, String rubyPath, boolean hasGui) throws IOException,
 			InterruptedException {
 		int exitV;
 		if (hasGui && (rubyPath == null || rubyPath == "" || !new File(rubyPath).exists())) {
@@ -121,7 +131,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 			return 24;
 		}
 		String runStr = rubyPath + "\\rvpacker.bat --verbose -f -d " + projectDir + " -t ace -a "
-				+ type.toString().toLowerCase();
+				+ actionType.toString().toLowerCase();
 		executor.getLogger().info(runStr);
 		Process p = Runtime.getRuntime().exec(runStr);
 		getNewListener(new BufferedReader(new InputStreamReader(p.getInputStream())), 0).start();
@@ -143,10 +153,5 @@ public class Runner extends SwingWorker<Integer, Void> {
 				e.printStackTrace();
 			}
 		});
-	}
-
-	public enum RVPAction {
-		PACK,
-		UNPACK
 	}
 }
