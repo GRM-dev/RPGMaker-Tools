@@ -1,6 +1,3 @@
-/**
- * 
- */
 package pl.grm.rvpacker;
 
 import java.awt.HeadlessException;
@@ -16,8 +13,12 @@ import javax.swing.*;
 public class Runner extends SwingWorker<Integer, Void> {
 
 	private Executor executor;
-	private RVPackerType type;
+	private RVPAction type;
 	private JComponent[] jComponents;
+
+	public Runner(Executor executor) {
+		this.executor = executor;
+	}
 
 	/**
 	 * 
@@ -25,8 +26,8 @@ public class Runner extends SwingWorker<Integer, Void> {
 	 * @param type
 	 * @param jComponents
 	 */
-	public Runner(Executor executor, RVPackerType type, JComponent[] jComponents) {
-		this.executor = executor;
+	public Runner(Executor executor, RVPAction type, JComponent[] jComponents) {
+		this(executor);
 		this.type = type;
 		this.jComponents = jComponents;
 	}
@@ -95,14 +96,14 @@ public class Runner extends SwingWorker<Integer, Void> {
 		}
 	}
 
-	private int runScript(RVPackerType type) throws Exception {
+	private int runScript(RVPAction type) throws Exception {
 		int exitV = 0;
 		try {
 			setProgress(20);
-			File makeDir = new File(FileOperation.getFile(executor.getConfigValue(ConfigId.PROJECTFILE)).getParent());
-			executor.append("Project directory: " + makeDir.getAbsolutePath(), 0);
+			File projectDir = new File(FileOperation.getFile(executor.getConfigValue(ConfigId.PROJECTFILE)).getParent());
+			executor.append("Project directory: " + projectDir.getAbsolutePath(), 0);
 			String envPacker = executor.getConfigValue(ConfigId.RUBY_PATH);
-			exitV = runScript(type, makeDir, envPacker, true);
+			exitV = runScript(type, projectDir, envPacker, true);
 		}
 		catch (IOException e1) {
 			e1.printStackTrace();
@@ -110,7 +111,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 		return exitV;
 	}
 
-	public int runScript(RVPackerType type, File projectDir, String rubyPath, boolean hasGui) throws IOException,
+	public int runScript(RVPAction type, File projectDir, String rubyPath, boolean hasGui) throws IOException,
 			InterruptedException {
 		int exitV;
 		if (hasGui && (rubyPath == null || rubyPath == "" || !new File(rubyPath).exists())) {
@@ -121,7 +122,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 		}
 		String runStr = rubyPath + "\\rvpacker.bat --verbose -f -d " + projectDir + " -t ace -a "
 				+ type.toString().toLowerCase();
-		System.out.println(runStr);
+		executor.getLogger().info(runStr);
 		Process p = Runtime.getRuntime().exec(runStr);
 		getNewListener(new BufferedReader(new InputStreamReader(p.getInputStream())), 0).start();
 		getNewListener(new BufferedReader(new InputStreamReader(p.getErrorStream())), 2).start();
@@ -144,7 +145,7 @@ public class Runner extends SwingWorker<Integer, Void> {
 		});
 	}
 
-	public enum RVPackerType {
+	public enum RVPAction {
 		PACK,
 		UNPACK
 	}

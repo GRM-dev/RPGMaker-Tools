@@ -4,11 +4,13 @@
 package pl.grm.rvpacker;
 
 import java.awt.EventQueue;
-import java.io.File;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
+
+import pl.grm.rvpacker.Runner.RVPAction;
 
 /**
  * @author Levvy055
@@ -17,7 +19,6 @@ import javax.swing.JOptionPane;
 public class MainPacker {
 
 	public static final String EXECUTABLE_PATH = System.getProperty("user.dir") + "\\";
-	public static final String PATH_RES = EXECUTABLE_PATH + "\\src\\main\\resources\\";
 	public static final String CONFIG_FILE_NAME = "config.ini";
 	public static final String LOGGER_FILE_NAME = "yrvPacker.log";
 	private Logger logger;
@@ -34,9 +35,39 @@ public class MainPacker {
 	public static void main(String[] args) {
 		MainPacker packer = new MainPacker();
 		if (args != null && args.length > 0) {
-			packer.parseArgs(args);
-			packer.verify();
-
+			try {
+				packer.parseArgs(args);
+				String rubyPath = packer.tryFindRuby();
+				if (packer.verify(rubyPath)) {
+					if (rubyPath == null) {
+						rubyPath = packer.tryFindRuby();
+					}
+					if (rubyPath != null && new File(rubyPath).exists()) {
+						if (new File(rubyPath + "\\rvpacker.bat").exists()) {
+							packer.setExecutor(new Executor(packer));
+							int exitValue = packer.execute();
+							if (exitValue == 0) {
+								System.out.println("Looks like completed.");
+							} else {
+								System.out.println("Error!\nGot " + exitValue + " exit value.");
+								System.exit(exitValue);
+							}
+						} else {
+							System.out.println("Couldn't find rvpacker gem in Ruby directory.");
+						}
+					} else {
+						System.out.println("Wrong Ruby Path");
+					}
+				} else {
+					System.out.println("Bad arguments!\n You need to provide args: "
+							+ "project directory(-p), action type[pack,unpack](-a)\n"
+							+ "Additionally if u don't have Ruby with rvpacker in environment variables than \n"
+							+ " u can provide path to its directory(-r).");
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
 		} else {
 			packer.init();
 			packer.start();
@@ -47,6 +78,7 @@ public class MainPacker {
 	 * Main private constructor called only from main()
 	 */
 	private MainPacker() {
+		logger = FileOperation.setupLogger(LOGGER_FILE_NAME);
 		config = createDefaultConfig();
 		argsMap = new HashMap<>();
 	}
@@ -56,7 +88,7 @@ public class MainPacker {
 	 * 
 	 * @param args
 	 */
-	private void parseArgs(String[] args) {
+	private void parseArgs(String[] args) throws IllegalArgumentException {
 		HashMap<String, String> argsList = new HashMap<String, String>();
 		HashMap<String, String> optsList = new HashMap<String, String>();
 		HashMap<String, String> doubleOptsList = new HashMap<String, String>();
@@ -82,39 +114,64 @@ public class MainPacker {
 		argsMap.put(ArgType.ARGS, argsList);
 		argsMap.put(ArgType.OPTS, optsList);
 		argsMap.put(ArgType.DOUBLE_OPTS, doubleOptsList);
-		Iterator<String> it1 = optsList.keySet().iterator();
-		while (it1.hasNext()) {
-			String arg = it1.next();
-			System.out.println(arg + ": " + argsList.get(arg));
-		}
-		System.out.println("____");
-		Iterator<String> it2 = argsList.keySet().iterator();
-		while (it2.hasNext()) {
-			String arg = it2.next();
-			System.out.println(arg);
-		}
-		System.out.println("____");
-		Iterator<String> it3 = doubleOptsList.keySet().iterator();
-		while (it3.hasNext()) {
-			String arg = it3.next();
-			System.out.println(arg);
-		}
 	}
 
 	/**
+	 * Verifies if argumentns of main method are correct
+	 * 
+	 * @param rubyPath
+	 *            additional path of ruby env path
 	 * 
 	 */
-	private boolean verify() {
+	private boolean verify(String rubyPath) {
 		HashMap<String, String> optsMap = argsMap.get(ArgType.OPTS);
-		if (!optsMap.containsKey("p") || !optsMap.containsKey("r")) return false;
-		return true;
+		boolean p = optsMap.containsKey("-p");
+		boolean a = optsMap.containsKey("-a");
+		boolean r = rubyPath != null || optsMap.containsKey("-r");
+		if (p) {
+			if (a) {
+				if (r) {
+					return true;
+				} else {
+					System.out.println("App couldn't find Ruby path with rvpacker gem installed.\n"
+							+ "You can also provide path to it.! \n" + "Use -r parameter.\n");
+				}
+			} else {
+				System.out.println("You haven't specified type of action! \n"
+						+ "Use -a parameter.\n Available tasks: [pack, unpack].");
+			}
+		} else {
+			System.out.println("You haven't specified project directory! \n"
+					+ "Use -p parameter.\n In directory should be project run file.");
+		}
+		return false;
+	}
+
+	/**
+	 * Executes script when running with startup parameters
+	 */
+	private int execute() {
+		Runner runner = getExecutor().getNewRunner();
+		try {
+			String actionS = argsMap.get(ArgType.OPTS).get("-a");
+			RVPAction actionE = RVPAction.valueOf(actionS.toUpperCase());
+			String projectS = argsMap.get(ArgType.OPTS).get("-p");
+			String rubyS = argsMap.get(ArgType.OPTS).get("-r");
+			return runner.runScript(actionE, new File(projectS).getParentFile(), rubyS, false);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	/**
 	 * Initialize program
 	 */
 	private void init() {
-		logger = FileOperation.setupLogger(LOGGER_FILE_NAME);
 		if (FileOperation.configExists()) {
 			HashMap<ConfigId, String> fileConf = FileOperation.readConfig();
 			for (Iterator<ConfigId> it = fileConf.keySet().iterator(); it.hasNext();) {
@@ -131,20 +188,25 @@ public class MainPacker {
 		} else {
 			FileOperation.saveConfig(config);
 		}
-		executor = new Executor(this);
+		setExecutor(new Executor(this));
 		appFrame = new AppFrame(this);
 		String path;
 		if ((path = getConfigValue(ConfigId.RUBY_PATH)) == null || !new File(path).exists()
 				|| !new File(path + "\\rvpacker.bat").exists()) {
-			tryFindRuby();
+			path = tryFindRuby();
+			if (path != null) {
+				setConfigValue(ConfigId.RUBY_PATH, path);
+			}
 			save();
 		}
 	}
 
 	/**
 	 * Looking for Ruby path and rvpacker gem there
+	 * 
+	 * @return
 	 */
-	private void tryFindRuby() {
+	private String tryFindRuby() {
 		String path = null;
 		boolean rubyPathFound = false;
 		boolean rvpackerFound = false;
@@ -173,7 +235,7 @@ public class MainPacker {
 
 		if (rubyPathFound && path != null && path.length() > 3) {
 			if (rvpackerFound) {
-				setConfigValue(ConfigId.RUBY_PATH, new String(path));
+				return path;
 			} else {
 				JOptionPane.showMessageDialog(appFrame,
 						"Can't find gem rvpacker in Ruby path.\n  Set correct path in settings.",
@@ -184,11 +246,13 @@ public class MainPacker {
 					"Wrong Ruby Path or no path in ENV.\n Set correct path in settings.", "Ruby path not found",
 					JOptionPane.WARNING_MESSAGE);
 		}
+		return null;
 	}
 
 	/**
 	 * @param env
-	 * @return
+	 *            environmental variable
+	 * @return ruby path if found with required gem. Null if not found
 	 */
 	private String findRuby(String env) {
 		String[] paths = env.split(";");
@@ -200,13 +264,12 @@ public class MainPacker {
 	}
 
 	/**
-	 * @param env
-	 * @return
+	 * @param path
+	 * @return true if found gem rvpacker
 	 */
 	private boolean findRVPacker(String path) {
 		boolean f1 = new File(path).exists();
 		boolean f2 = new File(path + "\\rvpacker.bat").exists();
-		System.out.println(f1 + "|" + f2);
 		if (f1 && f2) { return true; }
 		return false;
 	}
@@ -285,6 +348,10 @@ public class MainPacker {
 	 */
 	public String getConfigValue(ConfigId key) {
 		return config.get(key);
+	}
+
+	private void setExecutor(Executor executor) {
+		this.executor = executor;
 	}
 
 	public enum ArgType {

@@ -12,7 +12,7 @@ buildscript {
     }
 }
 
-version = "0.0.2"
+version = "0.0.3"
 group= "pl.grm.rvpacker"
 
 description = 'Simple program to pack/unpack RPG Maker project files from/to yaml files to commit to repository'

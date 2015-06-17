@@ -9,7 +9,7 @@ import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import pl.grm.rvpacker.Runner.RVPackerType;
+import pl.grm.rvpacker.Runner.RVPAction;
 
 /**
  * @author Levvy055
@@ -89,7 +89,7 @@ public class Executor {
 	 * @param jComponents
 	 */
 	public void runPackScript(JComponent[] jComponents) {
-		runner = new Runner(this, RVPackerType.PACK, jComponents);
+		runner = new Runner(this, RVPAction.PACK, jComponents);
 		runner.execute();
 	}
 
@@ -99,7 +99,7 @@ public class Executor {
 	 * @param jComponents
 	 */
 	public void runUnpackScript(JComponent[] jComponents) {
-		runner = new Runner(this, RVPackerType.UNPACK, jComponents);
+		runner = new Runner(this, RVPAction.UNPACK, jComponents);
 		runner.execute();
 	}
 
@@ -113,6 +113,10 @@ public class Executor {
 		} else {
 			return true;
 		}
+	}
+
+	public Runner getNewRunner() {
+		return new Runner(this);
 	}
 
 	/**
@@ -155,5 +159,14 @@ public class Executor {
 	 */
 	public void setAppFrame(AppFrame appFrame) {
 		this.appFrame = appFrame;
+	}
+
+	/**
+	 * Gets logger
+	 * 
+	 * @return
+	 */
+	public Logger getLogger() {
+		return logger;
 	}
 }
