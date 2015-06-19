@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Hardcodet.Wpf.TaskbarNotification;
 using MahApps.Metro.Controls;
 
 namespace RPGMaker_Tools
@@ -24,6 +26,11 @@ namespace RPGMaker_Tools
         public MainWindow()
         {
             InitializeComponent();
+            var tbi = new TaskbarIcon
+            {
+                Icon = Properties.Resources.B_Dim,
+                ToolTipText = "hello world"
+            };
         }
     }
 }
