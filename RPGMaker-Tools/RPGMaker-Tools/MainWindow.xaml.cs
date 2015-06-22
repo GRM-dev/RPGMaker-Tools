@@ -32,5 +32,16 @@ namespace RPGMaker_Tools
                 ToolTipText = "hello world"
             };
         }
+
+        private void btn_Exit_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btn_Options_Click(object sender, RoutedEventArgs e)
+        {
+            var flyout = this.Flyouts.Items[0] as Flyout;
+            flyout.IsOpen = !flyout.IsOpen;
+        }
     }
 }

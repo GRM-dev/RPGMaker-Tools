@@ -7,6 +7,11 @@
         xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d"
         Title="RPG Maker Tools" Height="600" Width="800" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" SaveWindowPosition="True">
+    <controls:MetroWindow.Flyouts>
+        <controls:FlyoutsControl x:Name="FlyoutController">
+            <controls:Flyout x:Name="SettingsFlyout" Width="400" Position="Left" Header="Settings"/>
+        </controls:FlyoutsControl>
+    </controls:MetroWindow.Flyouts>
     <Grid>
         <DockPanel>
             <Grid DockPanel.Dock="Top" MinHeight="35">
@@ -17,7 +22,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Label Content="Project: " HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                <TextBox Grid.Column="1" VerticalContentAlignment="Center"/>
+                <TextBox Grid.Column="1" VerticalContentAlignment="Center" IsReadOnly="True"/>
                 <Button Content="Change ..." Grid.Column="2"/>
                 </Grid>
             <Grid DockPanel.Dock="Bottom" Margin="0,10" MinHeight="35">
@@ -28,8 +33,8 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Button Content="Options" Grid.Column="1"/>
-                <Button Content="Exit" Grid.Column="3"/>
+                <Button Content="Options" Grid.Column="1" Click="btn_Options_Click"/>
+                <Button Content="Exit" Grid.Column="3" Click="btn_Exit_Click"/>
             </Grid>
             <Grid>
                 <Grid.ColumnDefinitions>
