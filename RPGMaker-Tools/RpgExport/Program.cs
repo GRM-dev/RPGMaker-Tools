@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Rpg
 {
-	static class Program
+	public static class Program
 	{
 		/// <summary>
 		/// The main entry point for the application.
@@ -57,5 +57,12 @@ namespace Rpg
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new MainForm());
 		}
+
+	    public static void ExportFromDev(string filepath)
+	    {
+            Properties.Settings.Default.Architecture = 0;
+            Properties.Settings.Default.Save();
+            Exporter.Build(filepath);
+        }
 	}
 }
