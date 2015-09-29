@@ -52,13 +52,36 @@ namespace RPGMVA_Insider.Database
             Close();
         }
 
+        public object ExecuteOneQuery(string query, QProps props)
+        {
+            if (!open)
+            {
+                Open();
+            }
+            Console.WriteLine("One-Result Query: " + query);
+            var cmd = new MySqlCommand(query, _conn) { CommandText = query };
+            if (props != null)
+            {
+                cmd.Prepare();
+                Console.WriteLine("with params: ");
+                foreach (var prop in props)
+                {
+                    cmd.Parameters.AddWithValue(prop.Key, prop.Value);
+                    Console.WriteLine("- " + prop.Key + ": " + prop.Value);
+                }
+            }
+            var obj=cmd.ExecuteScalar();
+            Close();
+            return obj;
+        }
+
         public Dictionary<string, string> ExecuteQuery(string query, QProps props)
         {
             if (!open)
             {
                 Open();
             }
-            Console.WriteLine("Query: "+query);
+            Console.WriteLine("Dict-Query: "+query);
             var cmd = new MySqlCommand(query, _conn);
             if (props != null)
             {

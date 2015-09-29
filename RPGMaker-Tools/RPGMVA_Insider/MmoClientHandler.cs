@@ -9,28 +9,22 @@ using RPGMVA_Insider.Game;
 
 namespace RPGMVA_Insider
 {
-    public static class MmoClient
+    public static class MmoClientHandler
     {
         private static SqlDbConnection _conn;
 
-        static MmoClient()
+        static MmoClientHandler()
         {
             _conn = SqlDbConnection.GetConnection();
 
         }
 
-        [RpgExport("AddPlayer")]
-        public static string AddPlayer(string name,string pswd)
+        public static SqlDbConnection Cdb
         {
-            try
+            get
             {
-                return Player.Add(_conn, name, pswd);
-            }
-            catch (Exception e)
-            {
-                return e.Message;
+                return _conn;
             }
         }
-
     }
 }

@@ -58,11 +58,12 @@ namespace Rpg
 			Application.Run(new MainForm());
 		}
 
-	    public static void ExportFromDev(string filepath)
+	    public static void ExportFromDev(string input, string output)
 	    {
             Properties.Settings.Default.Architecture = 0;
+            Properties.Settings.Default.LastOutput = output;
             Properties.Settings.Default.Save();
-            Exporter.Build(filepath);
+            Exporter.Build(input);
         }
 	}
 }

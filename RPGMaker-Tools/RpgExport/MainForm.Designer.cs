@@ -293,8 +293,6 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(538, 467);
-			this.Controls.Add(this.buttonDonate);
-			this.Controls.Add(this.linkLicense);
 			this.Controls.Add(this.groupArchitecture);
 			this.Controls.Add(this.consoleBox);
 			this.Controls.Add(this.groupAssembly);
@@ -344,8 +342,6 @@
 		private System.Windows.Forms.RadioButton radioCpu64;
 		private System.Windows.Forms.RadioButton radioCpu32;
 		private System.Windows.Forms.RadioButton radioCpuAny;
-		private System.Windows.Forms.LinkLabel linkLicense;
-		private System.Windows.Forms.Button buttonDonate;
 	}
 }
 

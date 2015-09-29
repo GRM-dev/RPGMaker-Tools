@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{810DDD21-5737-44CD-BCA4-EB65442D7F92}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RPGMVA_Insider_Test</RootNamespace>
-    <AssemblyName>RPGMVA_Insider_Test</AssemblyName>
+    <RootNamespace>RpgMulti</RootNamespace>
+    <AssemblyName>RpgMulti</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -36,11 +36,11 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>RPGMVA_Insider_Test.Program</StartupObject>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MySql.Data, Version=6.9.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
+      <HintPath>..\packages\MySql.Data.6.9.7\lib\net40\MySql.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -53,7 +53,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="Database\QProps.cs" />
+    <Compile Include="Database\Query.cs" />
+    <Compile Include="Database\SqlDbConnection.cs" />
+    <Compile Include="Game\Player.cs" />
+    <Compile Include="MmoClientHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -61,10 +65,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RPGMVA_Insider\RpgMVA_Insider.csproj">
-      <Project>{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}</Project>
-      <Name>RpgMVA_Insider</Name>
+    <ProjectReference Include="..\RpgExportAttribute\RpgExportAttribute.csproj">
+      <Project>{741D965A-F162-488F-9AFF-DD10D5C13741}</Project>
+      <Name>RpgExportAttribute</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Connection\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

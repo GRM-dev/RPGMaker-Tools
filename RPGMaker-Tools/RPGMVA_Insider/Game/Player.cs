@@ -3,26 +3,55 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using Rpg;
 using RPGMVA_Insider.Database;
 
 namespace RPGMVA_Insider.Game
 {
     public static class Player
     {
-        public static string Add(SqlDbConnection conn,string name, string pswd)
+        private static SqlDbConnection cDB = MmoClientHandler.Cdb;
+
+        [RpgExport("Player_Add")]
+        public static string Add(string name, string pswd)
         {
             try
             {
-                conn.ExecuteQuery(Query.AddPlayer.Get(), new QProps { { "name", name }, { "pswd", pswd }, { "salt", null } });
+                cDB.ExecuteNonQuery(Query.PlayerAdd.Get(), new QProps { { "name", name }, { "pswd", pswd }, { "salt", null } });
                 return "Done!";
             }
-            catch (SqlException e)
+            catch (Exception e)
             {
-               throw new Exception("Player.Add",e);
+                return ("Player.Add" + e.Message);
             }
             finally
             {
-                conn?.Close();
+                cDB?.Close();
+            }
+        }
+
+        [RpgExport("Player_Exists")]
+        public static string Exists(string name)
+        {
+            try
+            {
+                object existsI=cDB.ExecuteOneQuery(Query.PlayerExists.Get(), new QProps { { "name", name } });
+                if (existsI == null)
+                {
+                    return "Done[0]";
+                }
+                else
+                {
+                    return "Done[1]";
+                }                
+            }
+            catch (Exception e)
+            {
+                return ("Player.Add" + e.Message);
+            }
+            finally
+            {
+                cDB?.Close();
             }
         }
     }

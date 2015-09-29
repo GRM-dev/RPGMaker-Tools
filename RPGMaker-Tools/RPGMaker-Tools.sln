@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgMaker-Tools", "RPGMaker-
 		{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB} = {6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgMVA_Insider", "RPGMVA_Insider\RpgMVA_Insider.csproj", "{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgMultiplayer", "RPGMVA_Insider\RpgMultiplayer.csproj", "{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}"
 	ProjectSection(ProjectDependencies) = postProject
 		{741D965A-F162-488F-9AFF-DD10D5C13741} = {741D965A-F162-488F-9AFF-DD10D5C13741}
 	EndProjectSection
@@ -17,9 +17,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgExport", "RpgExport\RpgE
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgExportAttribute", "RpgExportAttribute\RpgExportAttribute.csproj", "{741D965A-F162-488F-9AFF-DD10D5C13741}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgMVA_Insider_Test", "Insider_Test\RpgMVA_Insider_Test.csproj", "{810DDD21-5737-44CD-BCA4-EB65442D7F92}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RpgMultiplayer_Test", "Insider_Test\RpgMultiplayer_Test.csproj", "{810DDD21-5737-44CD-BCA4-EB65442D7F92}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB} = {6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExporterCmd", "ExporterCmd\ExporterCmd.csproj", "{11B20884-B0E9-40E9-A321-D6AF799C0555}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB} = {6EDD7E0A-13E6-4ED2-A97F-C9A9D8207DDB}
+		{775FCA79-5CE5-457C-92EF-F44EEF84E8D8} = {775FCA79-5CE5-457C-92EF-F44EEF84E8D8}
 	EndProjectSection
 EndProject
 Global
@@ -48,6 +54,10 @@ Global
 		{810DDD21-5737-44CD-BCA4-EB65442D7F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{810DDD21-5737-44CD-BCA4-EB65442D7F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{810DDD21-5737-44CD-BCA4-EB65442D7F92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11B20884-B0E9-40E9-A321-D6AF799C0555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11B20884-B0E9-40E9-A321-D6AF799C0555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11B20884-B0E9-40E9-A321-D6AF799C0555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11B20884-B0E9-40E9-A321-D6AF799C0555}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
