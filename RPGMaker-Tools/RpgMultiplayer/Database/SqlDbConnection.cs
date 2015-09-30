@@ -1,13 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using Rpg;
 
-namespace RPGMVA_Insider.Database
+namespace RpgMulti.Database
 {
     public class SqlDbConnection
     {
@@ -70,34 +67,43 @@ namespace RPGMVA_Insider.Database
                     Console.WriteLine("- " + prop.Key + ": " + prop.Value);
                 }
             }
-            var obj=cmd.ExecuteScalar();
+            var obj = cmd.ExecuteScalar();
             Close();
             return obj;
         }
 
-        public Dictionary<string, string> ExecuteQuery(string query, QProps props)
+        public Dictionary<int, Dictionary<string, object>> ExecuteQuery(string query, QProps props)
         {
             if (!open)
             {
                 Open();
             }
-            Console.WriteLine("Dict-Query: "+query);
+            Console.WriteLine("Dict-Query: " + query);
             var cmd = new MySqlCommand(query, _conn);
             if (props != null)
             {
                 cmd.Prepare();
+                Console.WriteLine("with params: ");
                 foreach (var prop in props)
                 {
                     cmd.Parameters.AddWithValue(prop.Key, prop.Value);
+                    Console.WriteLine("- " + prop.Key + ": " + prop.Value);
                 }
             }
-            var list = new Dictionary<string, string>();
+            var list = new Dictionary<int, Dictionary<string, object>>();
             var rdr = cmd.ExecuteReader();
             while (rdr.Read())
             {
-                var key = rdr.GetString(1);
-                var value = rdr.GetString(2);
-                list.Add(key, value);
+                var key = rdr.GetInt32(0);
+                var record = new Dictionary<string, object>();
+                for (int i = 1; i < rdr.FieldCount; i++)
+                {
+                    var cName = rdr.GetName(i);
+                    var type = rdr.GetFieldType(i);
+                    var v=typeof(MySqlDataReader).GetMethod("GetFieldValue").MakeGenericMethod(type).Invoke(rdr, new object[] {i});
+                    record.Add(cName, v);
+                }
+                list.Add(key, record);
             }
             Close();
             return list;

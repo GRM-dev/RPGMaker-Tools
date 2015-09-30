@@ -179,10 +179,6 @@
       <Project>{775fca79-5ce5-457c-92ef-f44eef84e8d8}</Project>
       <Name>RpgExport</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RPGMVA_Insider\RpgMultiplayer.csproj">
-      <Project>{6edd7e0a-13e6-4ed2-a97f-c9a9d8207ddb}</Project>
-      <Name>RpgMultiplayer</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

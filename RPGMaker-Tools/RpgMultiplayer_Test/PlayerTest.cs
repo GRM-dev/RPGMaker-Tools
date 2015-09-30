@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RPGMVA_Insider.Database;
+using RpgMulti.Database;
+using RpgMulti.Game;
 
 namespace RpgMultiTest
 {
@@ -17,7 +18,8 @@ namespace RpgMultiTest
         {
             try
             {
-                conn.ExecuteNonQuery(Query.PlayerAdd.Get(), new QProps { { "name", name }, { "pswd", password }, { "salt", salt } });
+                var res = Player.Add(name, password);
+                Assert.AreEqual(res, "Done!");
             }
             catch (Exception e)
             {
@@ -30,11 +32,12 @@ namespace RpgMultiTest
         {
             try
             {
-
+                var res = Player.UpdatePassword(name, password);
+                Assert.AreEqual(res, "Done!");
             }
             catch (Exception e)
             {
-
+                Assert.Fail("Error! " + e.Message);
             }
         }
 

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using Rpg;
-using RPGMVA_Insider.Database;
-using RPGMVA_Insider.Game;
+﻿using RpgMulti.Database;
 
-namespace RPGMVA_Insider
+namespace RpgMulti
 {
     public static class MmoClientHandler
     {
