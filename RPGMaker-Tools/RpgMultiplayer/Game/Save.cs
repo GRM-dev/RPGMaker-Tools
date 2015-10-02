@@ -23,30 +23,47 @@ namespace RpgMulti.Game
             PlayerId = playerId;
         }
 
-        public Save(int playerId, int mapId, int x, int y) : this(playerId)
+        public Save(int playerId, int mapId, int x, int y, int dir) : this(playerId)
         {
             MapId = mapId;
             PosX = x;
             PosY = y;
+            Dir = dir;
+        }
+
+        public Save(int id, int playerId, string playerName, int mapId, int x, int y, int dir) : this(playerId, mapId, x, y, dir)
+        {
+            Id = id;
+            PlayerName = playerName;
         }
 
         [JsonConstructor]
-        public Save(int id, int playerId, int mapId, int x, int y) : this(playerId, mapId, x, y)
+        public Save(string playerName, int mapId, int posX, int posY, int dir) : this(0, 0, playerName, mapId, posX, posY, dir)
         {
-            Id = id;
+
         }
 
         [JsonProperty]
         public int Id { get; private set; }
         [JsonProperty]
         public int PlayerId { get; private set; }
+
+        public string PlayerName { get; private set; }
         [JsonProperty]
         public int MapId { get; set; }
         [JsonProperty]
         public int PosX { get; set; }
         [JsonProperty]
         public int PosY { get; set; }
+        [JsonProperty]
+        public int Dir { get; set; }
 
+
+        [RpgExport("Save_Exists")]
+        public static string Exists(string name)
+        {
+            return "";
+        }
 
         [RpgExport("Save_Get")]
         public static string Get(string name)
@@ -60,17 +77,24 @@ namespace RpgMulti.Game
                     var saveObj = qRes.Value;
                     if (saveObj != null && saveObj.Count != 0)
                     {
-                        var save = new Save(id);
+                        Console.WriteLine("Got save: " + qRes.Key + ".");
                         var mapId = 0;
                         var x = 0;
                         var y = 0;
+                        var dir = 0;
                         var sId = qRes.Key;
                         int.TryParse(saveObj["f_pos_map_id"].ToString(), out mapId);
                         int.TryParse(saveObj["f_pos_x"].ToString(), out x);
                         int.TryParse(saveObj["f_pos_y"].ToString(), out y);
-                        save.PosX = x;
-                        save.PosY = y;
-                        save.MapId = mapId;
+                        int.TryParse(saveObj["f_direction"].ToString(), out dir);
+                        var save = new Save(id)
+                        {
+                            PlayerName = name,
+                            PosX = x,
+                            PosY = y,
+                            MapId = mapId,
+                            Dir = dir
+                        };
                         var objS = save.ToJson();
                         return objS;
                     }
@@ -82,7 +106,7 @@ namespace RpgMulti.Game
             }
             catch (Exception e)
             {
-                return "Error in Save.class" + e.Message;
+                return "Error in Save.class! \n" + e.Message;
             }
             finally
             {
@@ -92,14 +116,24 @@ namespace RpgMulti.Game
         }
 
         [RpgExport("Save_Create")]
-        public static string Create(string name, int mapId, int posX, int posY)
+        public static string Create(string jSObj)
         {
+            Console.WriteLine("Save_Create| " + jSObj);
+            Console.WriteLine("Correct expl " + JsonConvert.SerializeObject(new Save(5, 8, "", 7, 6, 2, 8)));
             try
             {
+                var save = JsonConvert.DeserializeObject<Save>(jSObj);
+                var name = save.PlayerName;
+                Console.WriteLine("Save_Create Got From " + name);
                 var id = Player.GetId(name);
-                var save = new Save(id, mapId, posX, posY);
+                Console.Write("with id: " + id);
+                save.PlayerId = id;
+                var mapId = save.MapId;
+                var posX = save.PosX;
+                var posY = save.PosY;
+                var dir = save.Dir;
                 cDB.ExecuteNonQuery(Query.SaveCreate.Get(),
-                    new QProps { { "playerId", id }, { "mapId", mapId }, { "posX", posX }, { "posY", posY } });
+                    new QProps { { "playerId", id }, { "mapId", mapId }, { "posX", posX }, { "posY", posY }, { "dir", dir } });
                 return "Done!";
             }
             catch (Exception e)
@@ -111,11 +145,6 @@ namespace RpgMulti.Game
 
         public override bool Equals(object obj)
         {
-            if (obj == null)
-            {
-                return false;
-            }
-
             var p = obj as Save;
             if ((object)p == null)
             {

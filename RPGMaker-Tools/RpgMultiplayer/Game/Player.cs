@@ -18,7 +18,7 @@ namespace RpgMulti.Game
             }
             catch (Exception e)
             {
-                return ("Player.Add" + e.Message);
+                return ("Player.Add Exception: \n" + e.Message);
             }
             finally
             {
@@ -32,9 +32,9 @@ namespace RpgMulti.Game
             try
             {
                 var existsI = cDB.ExecuteOneQuery(Query.PlayerExists.Get(), new QProps { { "name", name } });
-                if (existsI == null)
+                if (existsI == null ||((int)existsI)==0)
                 {
-                    return "Player Not Exists";
+                    return "Player "+name+" not exists";
                 }
                 else
                 {
@@ -44,7 +44,7 @@ namespace RpgMulti.Game
             }
             catch (Exception e)
             {
-                return ("Player.Exists" + e.Message);
+                return ("Player.Exists Exception: \n" + e.Message);
             }
             finally
             {
@@ -62,7 +62,7 @@ namespace RpgMulti.Game
             }
             catch (Exception e)
             {
-                return ("Player.UpdPswd" + e.Message);
+                return ("Player.UpdPswd Exception: \n" + e.Message);
             }
             finally
             {

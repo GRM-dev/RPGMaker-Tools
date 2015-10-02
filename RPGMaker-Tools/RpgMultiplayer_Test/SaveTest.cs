@@ -43,8 +43,9 @@ namespace RpgMultiTest
         public void CreateSave()
         {
             try
-            {
-                var res = Save.Create(name, saveTest.MapId, saveTest.PosX, saveTest.PosY);
+            {//name, saveTest.MapId, saveTest.PosX, saveTest.PosY
+                string jSave = "";
+                var res = Save.Create(jSave);
                 Assert.AreEqual(res, "Done!");
             }
             catch (Exception e)
