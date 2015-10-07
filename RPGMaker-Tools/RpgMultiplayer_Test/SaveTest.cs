@@ -12,7 +12,7 @@ namespace RpgMultiTest
     {
         private static SqlDbConnection conn = SqlDbConnection.GetConnection();
         private static readonly string name = "TestName1";
-        private static readonly Save saveTest = new Save(0, 34, 52, 76);
+        private static readonly Save saveTest = new Save(0, 2, 34, 52, 76);
 
         [TestMethod]
         public void GetSave()
