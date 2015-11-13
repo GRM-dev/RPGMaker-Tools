@@ -218,3 +218,5 @@ pip-log.txt
 
 #Gradle
 .gradle/
+
+config.ini
