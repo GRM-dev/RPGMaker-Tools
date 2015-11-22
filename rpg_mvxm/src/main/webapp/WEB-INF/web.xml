@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+ <display-name>rpg_mvxm</display-name>
+ <servlet>
+  <servlet-name>Jersey</servlet-name>
+  <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+    <init-param>
+     <param-name>jersey.config.server.provider.packages</param-name>
+     <param-value>pl.grmdev.rpgmaker.multi.server.rest</param-value>
+    </init-param>
+    <init-param>
+     <param-name>jersey.config.server.tracing</param-name>
+     <param-value>ALL</param-value>
+    </init-param>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet>
+  <display-name>MainServlet</display-name>
+  <servlet-name>MainServlet</servlet-name>
+  <servlet-class>pl.grmdev.rpgmaker.multi.server.MainServlet</servlet-class>
+  <load-on-startup>2</load-on-startup>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>MainServlet</servlet-name>
+  <url-pattern>/rpg/*</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>Jersey</servlet-name>
+  <url-pattern>/api/*</url-pattern>
+ </servlet-mapping>
+ <resource-ref>
+  <description>RPG Maker VX Ace Multiplayer MySQL database connection</description>
+  <res-ref-name>jdbc/rpg_mvxm</res-ref-name>
+  <res-type>javax.sql.DataSource</res-type>
+  <res-auth>Container</res-auth>
+</resource-ref>
+</web-app>

@@ -13,11 +13,6 @@ namespace RpgMulti.Game
     {
         private static SqlDbConnection cDB = MmoClientHandler.Cdb;
 
-        public Save()
-        {
-
-        }
-
         public Save(int playerId)
         {
             PlayerId = playerId;
