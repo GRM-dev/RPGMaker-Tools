@@ -30,10 +30,13 @@
     <setting name="current-tab" value="Favorites"/> 
   </setting>  
   <setting name="Application_window-id"> 
-    <setting name="window_x" value="2063"/>  
-    <setting name="window_y" value="134"/>  
+    <setting name="window_x" value="698"/>  
+    <setting name="window_y" value="166"/>  
     <setting name="window_width" value="800"/>  
     <setting name="window_height" value="800"/>  
     <setting name="extended-state" value="0"/> 
-  </setting> 
+  </setting>  
+  <setting name="SinglePaneUIInstance_splitter-id">
+    <setting name="divider_location" value="400"/>
+  </setting>
 </root>
