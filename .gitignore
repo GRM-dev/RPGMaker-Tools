@@ -220,3 +220,5 @@ pip-log.txt
 .gradle/
 
 config.ini
+rpg_mvxm/gradle-app.setting
+rpg_mvxm/src/main/webapp/META-INF/context.xml

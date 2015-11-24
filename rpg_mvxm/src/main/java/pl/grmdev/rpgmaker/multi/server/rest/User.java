@@ -3,8 +3,8 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import java.sql.Timestamp;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import javax.persistence.*;
 import javax.ws.rs.*;
@@ -12,6 +12,7 @@ import javax.ws.rs.core.*;
 
 import org.hibernate.HibernateException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 
 import pl.grmdev.rpgmaker.multi.server.database.*;
@@ -31,20 +32,19 @@ public class User {
 	@Column(name = "f_name")
 	private String name;
 	@Column(name = "register_date")
-	private Timestamp registerDate;
+	private Date registerDate;
 	@Column(name = "time_last_active")
-	private Timestamp lastActive;
+	private Date lastActive;
 	@Column(name = "f_pasword")
 	private String password;
+	@Column(name = "f_email")
+	private String email;
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
 	private List<Player> players;
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
 	private List<User> friends;
-	@Column(name = "f_email")
-	private String email;
-	
 	@Path("/{name}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -70,13 +70,41 @@ public class User {
 	}
 	
 	@POST
+	@Path("/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response register(String payload) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response register(@PathParam("name") String name, String payload) {
+		if (name == null || name.isEmpty() || payload == null || payload.isEmpty()) {
+			return Result.badRequest(true, null, name, payload);
+		}
+		System.out.println("payload:" + payload);
 		try {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+			User user = mapper.readValue(payload, getClass());
+			if (user == null) {
+				return Result.badRequest(true, "Payload wrong format or incomplete");
+			}
+			if (!name.equals(user.getName())) {
+				return Result.badRequest(true, "Name in parameter is not the same as in body.");
+			}
+			if (user.getPassword() == null) {
+				return Result.badRequest(true, "No password provided.");
+			}
+			if (user.getEmail() == null) {
+				return Result.badRequest(true, "No e-mail provided.");
+			}
+			user.setRegisterDate(new Date());
 			DatabaseHandler.initConnection();
-			System.out.println("payload:" + payload);
-			return Result.created(false, "User created");
-		} catch (HibernateException e) {
+			H.save(user);
+			User userRes = H.<User> request(getClass()).eq("name", name).first();
+			if (user.getEmail().equals(userRes.getEmail())) {
+				return Result.created(false, "User created");
+			} else {
+				return Result.created(true,
+						"User propably created because some problems occured during request execution.");
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -136,19 +164,19 @@ public class User {
 		this.name = name;
 	}
 	
-	public Timestamp getRegisterDate() {
+	public Date getRegisterDate() {
 		return registerDate;
 	}
 	
-	public void setRegisterDate(Timestamp registerDate) {
+	public void setRegisterDate(Date registerDate) {
 		this.registerDate = registerDate;
 	}
 	
-	public Timestamp getLastActive() {
+	public Date getLastActive() {
 		return lastActive;
 	}
 	
-	public void setLastActive(Timestamp lastActive) {
+	public void setLastActive(Date lastActive) {
 		this.lastActive = lastActive;
 	}
 	

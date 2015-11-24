@@ -54,7 +54,7 @@ dependencies {
 	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.22.1'
 	compile group: 'com.google.guava', name: 'guava', version: '18.0'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
-	compile group: 'org.json', name: 'json', version: '20141113'
+	compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-json-org', version: '2.6.3'
 	def tomcatVersion = '7.0.52'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",

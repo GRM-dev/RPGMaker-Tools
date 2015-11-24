@@ -22,9 +22,7 @@ public class Result {
 	 */
 	private Result(boolean success, boolean error, String msg) {
 		this.success = success;
-		if (success) {
-			this.msg = msg;
-		}
+		this.msg = msg;
 		this.error = error;
 	}
 	
@@ -40,15 +38,15 @@ public class Result {
 	}
 	
 	public static Response noAuth(boolean error, String obj) {
-		return getStatusResponse(error, obj, Status.UNAUTHORIZED);
+		return getStatusResponse(error, obj, Status.UNAUTHORIZED).build();
 	}
 
 	public static Response notFound(boolean error, String obj) {
-		return getStatusResponse(error, obj, Status.NOT_FOUND);
+		return getStatusResponse(error, obj, Status.NOT_FOUND).build();
 	}
 	
 	/**
-	 * @param b
+	 * @param warning
 	 * @param msg
 	 * @return
 	 */
@@ -56,14 +54,38 @@ public class Result {
 		return Response.status(Status.CREATED).entity(new Result(true, warning, msg).asJson()).build();
 	}
 	
-	private static Response getStatusResponse(boolean error, String obj, Status status) {
+	/**
+	 * @param error
+	 * @param msg
+	 * @param payload
+	 * @return
+	 */
+	public static Response badRequest(boolean error, String msg, String... params) {
+		msg = "{\"Message\": \"" + msg + "\",";
+		msg += "\"Parameters\": [";
+		for (int i = 0; i < params.length; i++) {
+			String param = params[i];
+			msg += "\"Param " + i + "\": \"";
+			if (param == null) {				
+				msg += "NULL";
+			} else {
+				msg += param;
+			}
+			msg += "\",";
+		}
+		msg = msg.substring(0, msg.length() - 1) + "]}";
+			ResponseBuilder respBuilder = getStatusResponse(error, msg, Status.BAD_REQUEST);
+		return respBuilder.build();
+	}
+
+	private static ResponseBuilder getStatusResponse(boolean error, String obj, Status status) {
 		ResponseBuilder respB = Response.status(status);
 		if (error) {
 			respB = respB.entity(new Result(false, true, obj).asJson());
 		} else if (obj != null) {
 			respB = respB.entity(obj);
 		}
-		return respB.build();
+		return respB;
 	}
 
 	public static Response exception(Exception e) {
@@ -84,18 +106,17 @@ public class Result {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("{\"success\":\"");
+		builder.append("{\"success\": ");
 		builder.append(success);
-		builder.append("\",\"error\":\"");
+		builder.append(",\"error\": ");
 		builder.append(error);
-		builder.append("\",\"");
 		if (msg != null) {
+			builder.append(",\"");
 			if (error) {
 				builder.append("errorMsg\":\"");
 			} else {
 				builder.append("message\":\"");
-				builder.append("\"" + msg + "\"");
-				builder.append("\",\"");
+				builder.append(msg);
 			}
 		}
 		builder.append("\"} ");
