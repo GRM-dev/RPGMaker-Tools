@@ -26,7 +26,7 @@ public class Users {
 			List<User> users = H.<User> request(User.class).list();
 		for (User user : users) {
 			res += "{\"id\": " + user.getId() + ",";
-			res += "\"username\": \"" + user.getName() + "\"},";
+			res += "\"username\": \"" + user.getUsername() + "\"},";
 		}
 		res = res.substring(0, res.length() - 1);
 		res += "]";

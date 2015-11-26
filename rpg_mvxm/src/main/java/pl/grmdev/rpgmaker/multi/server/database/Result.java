@@ -61,19 +61,21 @@ public class Result {
 	 * @return
 	 */
 	public static Response badRequest(boolean error, String msg, String... params) {
-		msg = "{\"Message\": \"" + msg + "\",";
-		msg += "\"Parameters\": [";
-		for (int i = 0; i < params.length; i++) {
-			String param = params[i];
-			msg += "\"Param " + i + "\": \"";
-			if (param == null) {				
-				msg += "NULL";
-			} else {
-				msg += param;
+		msg = "{\"Message\": \"" + msg;
+		if (params != null) {
+			msg += "\",\"Parameters\": [";
+			for (int i = 0; i < params.length; i++) {
+				String param = params[i];
+				msg += "\"Param " + i + "\": \"";
+				if (param == null) {
+					msg += "NULL";
+				} else {
+					msg += param;
+				}
+				msg += "\",";
 			}
-			msg += "\",";
+			msg = msg.substring(0, msg.length() - 1) + "]}";
 		}
-		msg = msg.substring(0, msg.length() - 1) + "]}";
 			ResponseBuilder respBuilder = getStatusResponse(error, msg, Status.BAD_REQUEST);
 		return respBuilder.build();
 	}
@@ -89,11 +91,11 @@ public class Result {
 	}
 
 	public static Response exception(Exception e) {
-		return Result.exception(e, null);
+		return Result.exception(e, "Exception in request execution");
 	}
 	
 	public static Response exception(Exception e, String info) {
-		return Response.status(500).entity(new Result(false, true, info + "\n" + e.getMessage()).asJson()).build();
+		return Response.status(500).entity(new Result(false, true, info + " // " + e.getMessage()).asJson()).build();
 	}
 	
 	/**
@@ -116,8 +118,8 @@ public class Result {
 				builder.append("errorMsg\":\"");
 			} else {
 				builder.append("message\":\"");
-				builder.append(msg);
 			}
+			builder.append(msg.replace("\"", "'"));
 		}
 		builder.append("\"} ");
 		return builder.toString();

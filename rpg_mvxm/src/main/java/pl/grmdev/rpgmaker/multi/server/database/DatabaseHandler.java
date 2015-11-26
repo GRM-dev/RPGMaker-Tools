@@ -11,7 +11,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
-import com.github.fluent.hibernate.HibernateSessionFactory;
+import com.github.fluent.hibernate.factory.HibernateSessionFactory;
 
 import pl.grmdev.rpgmaker.multi.server.rest.User;
 
