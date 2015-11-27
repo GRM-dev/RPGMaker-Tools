@@ -3,23 +3,43 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.hibernate.annotations.Cascade;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
+import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
+import pl.grmdev.rpgmaker.multi.server.database.Result;
 
 /**
  * @author Levvy055
- *
+ * 		
  */
 @Entity
 @Table(name = "tokens")
@@ -51,11 +71,13 @@ public class Token {
 			JSONObject obj = new JSONObject(body);
 			String username = obj.getString("username");
 			String pswd = obj.getString("password");
-			if (username == null || username.isEmpty() || pswd == null | pswd.isEmpty()) {
+			if (username == null || username.isEmpty()
+					|| pswd == null | pswd.isEmpty()) {
 				return Result.badRequest(true, "Wrong credentials!");
 			}
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username).eq("password", pswd).first();
+			User user = H.<User> request(User.class).eq("username", username)
+					.eq("password", pswd).first();
 			if (user == null) {
 				return Result.badRequest(true, "Wrong credentials!");
 			}
@@ -65,7 +87,8 @@ public class Token {
 			do {
 				attempts++;
 				token = genToken(username, user.getId());
-				Token tokenTemp = H.<Token> request(getClass()).eq("token", token).first();
+				Token tokenTemp = H.<Token> request(getClass())
+						.eq("token", token).first();
 				exists = tokenTemp != null;
 				
 				if (tokenTemp != null) {
@@ -79,7 +102,8 @@ public class Token {
 					System.out.println(new String(token));
 					
 				if (attempts > 6) {
-					return Result.exception(new Exception("There was problem with token generator."));
+					return Result.exception(new Exception(
+							"There was problem with token generator."));
 				}
 			} while (exists);
 			Token tokenObj = new Token();
@@ -92,9 +116,11 @@ public class Token {
 			Token tokenRespond = H.save(tokenObj);
 			startCleanupThread(user, request.getRemoteAddr());
 			if (tokenObj.equals(tokenRespond)) {
-				return Result.created(false, "Token generated. " + new String(token));
+				return Result.created(false,
+						"Token generated. " + new String(token));
 			} else {
-				return Result.created(true, "Token generated but smth went wrong.");
+				return Result.created(true,
+						"Token generated but smth went wrong.");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,7 +138,7 @@ public class Token {
 		}
 		return token.toString().toCharArray();
 	}
-
+	
 	/**
 	 * @param user
 	 * @param address
@@ -134,12 +160,43 @@ public class Token {
 		thread.setName("token cleanup thread: " + address);
 		thread.start();
 	}
-
+	
+	@GET
+	@Path("/{username}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getExpirationDate(@PathParam("username") String username,
+			String json) {
+		if (username == null || username.isEmpty() || json == null
+				|| json.isEmpty()) {
+			return Result.badRequest(true, "No username specified and/or body",
+					username, json);
+		}
+		try {
+			JSONObject jobj = new JSONObject(json);
+			String token = jobj.getString("authToken");
+			if (token == null || token.isEmpty()) {
+				return Result.badRequest(true, "No authToken provided");
+			}
+			DatabaseHandler.initConnection();
+			Token tokenObj = H.<Token> request(Token.class)
+					.eq("token", token.toCharArray()).first();
+			if (tokenObj == null) {
+				return Result.notFound(true, "token not exists!");
+			}
+			return Result.success(tokenObj.getExpirationTime().toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return Result.exception(e);
+		}
+		
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((expirationTime == null) ? 0 : expirationTime.hashCode());
+		result = prime * result
+				+ ((expirationTime == null) ? 0 : expirationTime.hashCode());
 		result = prime * result + id;
 		result = prime * result + Arrays.hashCode(token);
 		result = prime * result + ((user == null) ? 0 : user.hashCode());

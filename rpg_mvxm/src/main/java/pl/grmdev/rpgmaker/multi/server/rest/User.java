@@ -4,12 +4,31 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.*;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.persistence.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
@@ -17,11 +36,12 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
+import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
+import pl.grmdev.rpgmaker.multi.server.database.Result;
 
 /**
  * @author Levvy055
- *
+ * 		
  */
 @Entity
 @Table(name = "users")
@@ -41,6 +61,8 @@ public class User {
 	private String password;
 	@Column(name = "f_email", nullable = false, unique = true)
 	private String email;
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private List<Token> tokens;
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
 	private List<Player> players;
@@ -51,18 +73,23 @@ public class User {
 	@Path("/{name}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("name") String name, @QueryParam("authToken") String token) {
+	public Response get(@PathParam("name") String name,
+			@QueryParam("authToken") String token) {
 		try {
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", name).first();
+			User user = H.<User> request(User.class).eq("username", name)
+					.first();
 			if (user == null) {
-				return Result.notFound(false, "User with name " + name + "was not found");
+				return Result.notFound(false,
+						"User with name " + name + "was not found");
 			}
 			String res;
-			if (token != null && !token.isEmpty() && token.trim().equals("token")) {
+			if (token != null && !token.isEmpty()
+					&& token.trim().equals("token")) {
 				res = user.toString();
 			} else {
-				res = "{\"id\": " + user.getId() + ", \"name\": \"" + user.getUsername() + "\"}";
+				res = "{\"id\": " + user.getId() + ", \"name\": \""
+						+ user.getUsername() + "\"}";
 			}
 			System.out.println("name: " + name + "\ntoken: " + token);
 			return Result.json(res);
@@ -77,18 +104,22 @@ public class User {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response register(@PathParam("user") String name, String payload) {
-		if (name == null || name.isEmpty() || payload == null || payload.isEmpty()) {
+		if (name == null || name.isEmpty() || payload == null
+				|| payload.isEmpty()) {
 			return Result.badRequest(true, null, name, payload);
 		}
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+			mapper.setDateFormat(
+					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
 			User user = mapper.readValue(payload, getClass());
 			if (user == null) {
-				return Result.badRequest(true, "Payload wrong format or incomplete");
+				return Result.badRequest(true,
+						"Payload wrong format or incomplete");
 			}
 			if (!name.equals(user.getUsername())) {
-				return Result.badRequest(true, "Name in parameter is not the same as in body.");
+				return Result.badRequest(true,
+						"Name in parameter is not the same as in body.");
 			}
 			if (user.getPassword() == null) {
 				return Result.badRequest(true, "No password provided.");
@@ -115,7 +146,8 @@ public class User {
 	@Path("/pswd/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changePassword(@PathParam("user") String username, String payload) {
+	public Response changePassword(@PathParam("user") String username,
+			String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
 			String token = jObj.getString("authToken");
@@ -128,12 +160,14 @@ public class User {
 			String oldPswd = jObj.getString("oldPassword");
 			String newPswd = jObj.getString("newPassword");
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username).first();
+			User user = H.<User> request(User.class).eq("username", username)
+					.first();
 			if (!user.getPassword().equals(oldPswd)) {
 				return Result.noAuth(true, "Wrong credentials!");
 			}
 			if (newPswd == null || newPswd.length() <= 4) {
-				return Result.badRequest(true, "Wrong Password! It should be longer than 3 letters.");
+				return Result.badRequest(true,
+						"Wrong Password! It should be longer than 3 letters.");
 			}
 			user.setPassword(newPswd);
 			H.saveOrUpdate(user);
@@ -148,7 +182,8 @@ public class User {
 	@Path("/mail/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeEmail(@PathParam("user") String username, String payload) {
+	public Response changeEmail(@PathParam("user") String username,
+			String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
 			String token = jObj.getString("authToken");
@@ -159,14 +194,17 @@ public class User {
 				return Result.noAuth(true, "No access for that user!");
 			}
 			String mail = jObj.getString("mail");
-			Pattern pattern=Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-					+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+			Pattern pattern = Pattern
+					.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+							+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 			Matcher matcher = pattern.matcher(mail);
 			if (mail == null || mail.length() <= 4 || !matcher.matches()) {
-				return Result.badRequest(true, "No mail provided or wrong mail syntax!");
+				return Result.badRequest(true,
+						"No mail provided or wrong mail syntax!");
 			}
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username).first();
+			User user = H.<User> request(User.class).eq("username", username)
+					.first();
 			user.setEmail(mail);
 			H.saveOrUpdate(user);
 			return Result.success("Mail updated");
@@ -192,7 +230,8 @@ public class User {
 			}
 			String pswd = jObj.getString("password");
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username).first();
+			User user = H.<User> request(User.class).eq("username", username)
+					.first();
 			if (!user.getPassword().equals(pswd)) {
 				return Result.noAuth(true, "Wrong credentials!");
 			}
@@ -210,9 +249,12 @@ public class User {
 		int result = 1;
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + id;
-		result = prime * result + ((username == null) ? 0 : username.hashCode());
-		result = prime * result + ((password == null) ? 0 : password.hashCode());
-		result = prime * result + ((registerDate == null) ? 0 : registerDate.hashCode());
+		result = prime * result
+				+ ((username == null) ? 0 : username.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime * result
+				+ ((registerDate == null) ? 0 : registerDate.hashCode());
 		return result;
 	}
 	
@@ -350,5 +392,13 @@ public class User {
 	
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	
+	public List<Token> getTokens() {
+		return tokens;
+	}
+	
+	public void setTokens(List<Token> tokens) {
+		this.tokens = tokens;
 	}
 }
