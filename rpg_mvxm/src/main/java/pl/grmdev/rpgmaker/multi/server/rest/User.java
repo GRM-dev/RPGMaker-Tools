@@ -31,15 +31,15 @@ public class User {
 	@Id
 	@GeneratedValue
 	private int id;
-	@Column(name = "f_name")
+	@Column(name = "f_name", unique = true, nullable = false)
 	private String username;
-	@Column(name = "register_date")
+	@Column(name = "register_date", nullable = false)
 	private Date registerDate;
 	@Column(name = "time_last_active")
 	private Date lastActive;
 	@Column(name = "f_pasword")
 	private String password;
-	@Column(name = "f_email")
+	@Column(name = "f_email", nullable = false, unique = true)
 	private String email;
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
@@ -47,13 +47,14 @@ public class User {
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
 	private List<User> friends;
+	
 	@Path("/{name}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response get(@PathParam("name") String name, @QueryParam("authToken") String token) {
 		try {
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("name", name).first();
+			User user = H.<User> request(User.class).eq("username", name).first();
 			if (user == null) {
 				return Result.notFound(false, "User with name " + name + "was not found");
 			}

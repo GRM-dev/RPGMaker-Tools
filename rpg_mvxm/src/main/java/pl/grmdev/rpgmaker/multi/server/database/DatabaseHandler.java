@@ -13,7 +13,7 @@ import org.hibernate.service.ServiceRegistry;
 
 import com.github.fluent.hibernate.factory.HibernateSessionFactory;
 
-import pl.grmdev.rpgmaker.multi.server.rest.User;
+import pl.grmdev.rpgmaker.multi.server.rest.*;
 
 /**
  * @author Levvy055
@@ -30,6 +30,7 @@ public class DatabaseHandler {
 			ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(properties).build();
 			MetadataSources metadata = new MetadataSources(serviceRegistry);
 			metadata.addAnnotatedClass(User.class);
+			metadata.addAnnotatedClass(Token.class);
 			factory = metadata.buildMetadata().buildSessionFactory();
 			try {
 				HibernateSessionFactory.Builder.configureFromExistingSessionFactory(factory);
