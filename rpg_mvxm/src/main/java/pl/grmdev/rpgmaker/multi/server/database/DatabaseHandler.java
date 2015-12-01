@@ -40,9 +40,11 @@ public final class DatabaseHandler {
             return;
         }
 
-        HibernateSessionFactory.Builder.configureFromDefaultHibernateCfgXml().annotatedClasses(
-                User.class, Token.class, Player.class, Position.class, Variables.class,
-                Switches.class, Inventory.class, MultiplayerData.class, Actor.class);
+        HibernateSessionFactory.Builder
+                .configureFromDefaultHibernateCfgXml()
+                .annotatedClasses(User.class, Token.class, Player.class, Position.class,
+                        Variables.class, Switches.class, Inventory.class, MultiplayerData.class,
+                        Actor.class).createSessionFactory();
 
         configured = true;
     }
