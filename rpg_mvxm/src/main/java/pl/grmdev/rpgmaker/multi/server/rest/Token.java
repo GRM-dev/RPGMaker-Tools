@@ -3,39 +3,18 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
-import org.hibernate.annotations.Cascade;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
-import pl.grmdev.rpgmaker.multi.server.database.Result;
+import pl.grmdev.rpgmaker.multi.server.database.*;
 
 /**
  * @author Levvy055
@@ -54,11 +33,10 @@ public class Token {
 	@Column(name = "f_expiration_time", nullable = false)
 	private Date expirationTime;
 	@JoinColumn(name = "user_id", nullable = false)
-	@ManyToOne(cascade = CascadeType.ALL)
-	@Cascade(value = {org.hibernate.annotations.CascadeType.DELETE})
+	@ManyToOne
 	private User user;
 	private static final Random random = new Random();
-	private static final String CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ234567890!@#$";
+	private static final String CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ234567890!@_-$";
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -132,7 +110,7 @@ public class Token {
 	 * @return
 	 */
 	private char[] genToken(String name, int id) {
-		StringBuilder token = new StringBuilder(120);
+		StringBuilder token = new StringBuilder();
 		for (int i = 0; i < 120; i++) {
 			token.append(CHARS.charAt(random.nextInt(CHARS.length())));
 		}
@@ -163,29 +141,20 @@ public class Token {
 	
 	@GET
 	@Path("/{username}")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getExpirationDate(@PathParam("username") String username,
-			String json) {
-		if (username == null || username.isEmpty() || json == null
-				|| json.isEmpty()) {
-			return Result.badRequest(true, "No username specified and/or body",
-					username, json);
+	public Response getExpirationDate(@PathParam("username") String username, @QueryParam("authToken") String token) {
+		if (username == null || username.isEmpty() || token == null || token.isEmpty()) {
+			return Result.badRequest(true, "No username specified and/or token", username, token);
 		}
+		System.out.println(token);
 		try {
-			JSONObject jobj = new JSONObject(json);
-			String token = jobj.getString("authToken");
-			if (token == null || token.isEmpty()) {
-				return Result.badRequest(true, "No authToken provided");
-			}
 			DatabaseHandler.initConnection();
-			Token tokenObj = H.<Token> request(Token.class)
-					.eq("token", token.toCharArray()).first();
+			Token tokenObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
 			if (tokenObj == null) {
 				return Result.notFound(true, "token not exists!");
 			}
 			return Result.success(tokenObj.getExpirationTime().toString());
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}

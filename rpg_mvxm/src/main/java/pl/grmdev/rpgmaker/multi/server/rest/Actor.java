@@ -3,13 +3,8 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.ws.rs.Path;
 
 /**
  * @author Levvy055
@@ -17,6 +12,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "actors")
+@Path("actor")
 public class Actor {
 	@Id
 	@GeneratedValue

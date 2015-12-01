@@ -5,9 +5,7 @@ package pl.grmdev.rpgmaker.multi.server.database;
 
 import java.util.Properties;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -15,14 +13,7 @@ import org.hibernate.service.ServiceRegistry;
 
 import com.github.fluent.hibernate.factory.HibernateSessionFactory;
 
-import pl.grmdev.rpgmaker.multi.server.rest.Inventory;
-import pl.grmdev.rpgmaker.multi.server.rest.MultiplayerData;
-import pl.grmdev.rpgmaker.multi.server.rest.Player;
-import pl.grmdev.rpgmaker.multi.server.rest.Position;
-import pl.grmdev.rpgmaker.multi.server.rest.Switches;
-import pl.grmdev.rpgmaker.multi.server.rest.Token;
-import pl.grmdev.rpgmaker.multi.server.rest.User;
-import pl.grmdev.rpgmaker.multi.server.rest.Variables;
+import pl.grmdev.rpgmaker.multi.server.rest.*;
 
 /**
  * @author Levvy055
@@ -46,6 +37,7 @@ public class DatabaseHandler {
 			metadata.addAnnotatedClass(Switches.class);
 			metadata.addAnnotatedClass(Inventory.class);
 			metadata.addAnnotatedClass(MultiplayerData.class);
+			metadata.addAnnotatedClass(Actor.class);
 			factory = metadata.buildMetadata().buildSessionFactory();
 			try {
 				HibernateSessionFactory.Builder.configureFromExistingSessionFactory(factory);
