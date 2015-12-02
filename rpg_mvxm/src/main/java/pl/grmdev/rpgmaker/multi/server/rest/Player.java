@@ -121,6 +121,32 @@ public class Player {
 		return Result.json(player.toString());
 	}
 	
+	@GET
+	@Path("/id/{player}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getPlayerById(@PathParam("player") int playerId, @QueryParam("authToken") String token) {
+		if (playerId == 0) {
+			return Result.badRequest(true, "Received no player id or id = 0!");
+		}
+		Player player = H.<Player> getById(Player.class, playerId);
+		if (token == null || token.isEmpty()) {
+			return Result.noAuth(false, player.getName());
+		}
+		return getPlayer(player.getName(), token);
+	}
+	
+	@GET
+	@Path("/name/{player}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getPlayerName(@PathParam("player") int playerId) {
+		if (playerId == 0) {
+			return Result.badRequest(true, "Received no player id or id = 0!");
+		}
+		DatabaseHandler.initConnection();
+		Player player = H.<Player> getById(Player.class, playerId);
+		return Result.json("{\"id\":" + playerId + ",\"name\":\"" + player.getName() + "\"}");
+	}
+
 	/**
 	 * @return
 	 */

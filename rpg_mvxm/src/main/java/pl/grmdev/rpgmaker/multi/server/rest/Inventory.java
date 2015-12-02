@@ -3,10 +3,7 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.Path;
 
 /**
@@ -14,7 +11,7 @@ import javax.ws.rs.Path;
  *		
  */
 @Entity
-@Table(name = "invntories")
+@Table(name = "inventories")
 @Path("inv")
 public class Inventory {
 	@Id
