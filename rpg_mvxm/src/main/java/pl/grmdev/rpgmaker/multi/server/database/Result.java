@@ -62,7 +62,7 @@ public class Result {
 	 */
 	public static Response badRequest(boolean error, String msg, String... params) {
 		msg = "{\"Message\": \"" + msg;
-		if (params != null) {
+		if (params != null && params.length > 0) {
 			msg += "\",\"Parameters\": [";
 			for (int i = 0; i < params.length; i++) {
 				String param = params[i];

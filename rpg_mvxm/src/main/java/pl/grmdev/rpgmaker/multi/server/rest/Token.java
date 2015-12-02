@@ -36,7 +36,7 @@ public class Token {
 	@ManyToOne
 	private User user;
 	private static final Random random = new Random();
-	private static final String CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ234567890!@_-$";
+	public static final String CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ234567890!@_-$";
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -160,6 +160,23 @@ public class Token {
 		}
 		
 	}
+	
+	/**
+	 * @param token
+	 * @return
+	 */
+	public static boolean verify(String token, int id) {
+		if (token != null && !token.isEmpty()) {
+			Token tokenObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
+			if (tokenObj != null) {
+				if (tokenObj.getUser().getId() == id) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

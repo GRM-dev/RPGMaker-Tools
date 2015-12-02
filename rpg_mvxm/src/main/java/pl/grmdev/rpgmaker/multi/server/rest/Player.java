@@ -3,10 +3,19 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import javax.persistence.*;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fluent.hibernate.H;
+
+import pl.grmdev.rpgmaker.multi.server.database.*;
 
 /**
  * @author Levvy055
@@ -44,6 +53,95 @@ public class Player {
 	@JoinColumn(name = "f_actors")
 	private List<Actor> actors;
 	
+	@POST
+	@Path("/{username}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response addPlayer(@PathParam("username") String username, String body) {
+		if (body == null || body.isEmpty()) {
+			return Result.badRequest(true, "Received empty request!");
+		}
+		if (username == null || username.isEmpty()) {
+			return Result.badRequest(true, "Received no username!");
+		}
+		try {
+			JSONObject json = new JSONObject(body);
+			String token = json.getString("authToken");
+			DatabaseHandler.initConnection();
+			username = username.toLowerCase();
+			User user = H.<User> request(User.class).eq("username", username).first();
+			if (user == null) {
+				return Result.notFound(true, "User " + username + "not found");
+			}
+			if (!Token.verify(token, user.getId())) {
+				return Result.noAuth(true, "wrong token");
+			}
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+			Player player = mapper.readValue(json.getJSONObject("player").toString(), Player.class);
+			if (player == null) {
+				return Result.badRequest(true, "wrong player object received", json.getJSONObject("player").toString());
+			}
+			String pname = player.getName();
+			if (pname == null || pname.isEmpty() || !pname.matches(User.USERNAME_PATTERN)) {
+				return Result.badRequest(true, "Wrong username format", pname);
+			}
+			player.setCreationDate(new Date());
+			Player p2 = H.save(player);
+			if (player.equals(p2)) {
+				return Result.created(false, "Player created");
+			} else {
+				return Result.created(true, "Player created but not sure!");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Result.exception(e);
+		}
+	}
+	
+	@GET
+	@Path("/{player}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getPlayer(@PathParam("player") String playerName, @QueryParam("authToken") String token) {
+		if (token == null || token.isEmpty()) {
+			return Result.noAuth(true, "No token!");
+		}
+		if (playerName == null || playerName.isEmpty()) {
+			return Result.badRequest(true, "Received no player name!");
+		}
+		DatabaseHandler.initConnection();
+		Token tokObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
+		if (tokObj == null) {
+			return Result.noAuth(true, "Wrong token");
+		}
+		Player player = H.<Player> request(getClass()).eq("name", playerName).first();
+		if (player == null) {
+			return Result.notFound(true, "Player " + playerName + " not exist!");
+		}
+		return Result.json(player.toString());
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean correct() {
+		if (getName() != null && getPosition() != null && getInventory() != null && getVars() != null
+				&& getSwitches() != null && getMData() != null && getActors() != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * @return
+	 */
+	public static boolean correct(Player player) {
+		if (player == null) {
+			return false;
+		}
+		return player.correct();
+	}
+	
 	public int getId() {
 		return id;
 	}
@@ -80,7 +178,8 @@ public class Player {
 	public void setSwitches(Switches switches) {
 		this.switches = switches;
 	}
-	public MultiplayerData getmData() {
+	
+	public MultiplayerData getMData() {
 		return mData;
 	}
 	public void setmData(MultiplayerData mData) {
@@ -103,5 +202,94 @@ public class Player {
 	}
 	public void setActors(List<Actor> actors) {
 		this.actors = actors;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("{\"id\":\"");
+		builder.append(id);
+		builder.append("\",\"");
+		if (name != null) {
+			builder.append("name\":\"");
+			builder.append(name);
+			builder.append("\",\"");
+		}
+		if (position != null) {
+			builder.append("position\":\"");
+			builder.append(position);
+			builder.append("\",\"");
+		}
+		if (inventory != null) {
+			builder.append("inventory\":\"");
+			builder.append(inventory);
+			builder.append("\",\"");
+		}
+		if (vars != null) {
+			builder.append("vars\":\"");
+			builder.append(vars);
+			builder.append("\",\"");
+		}
+		if (switches != null) {
+			builder.append("switches\":\"");
+			builder.append(switches);
+			builder.append("\",\"");
+		}
+		if (mData != null) {
+			builder.append("mData\":\"");
+			builder.append(mData);
+			builder.append("\",\"");
+		}
+		if (creationDate != null) {
+			builder.append("creationDate\":\"");
+			builder.append(creationDate);
+			builder.append("\",\"");
+		}
+		if (lastSaveDate != null) {
+			builder.append("lastSaveDate\":\"");
+			builder.append(lastSaveDate);
+			builder.append("\",\"");
+		}
+		if (actors != null) {
+			builder.append("actors\":\"");
+			builder.append(actors);
+		}
+		builder.append("\"} ");
+		return builder.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((creationDate == null) ? 0 : creationDate.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		if (creationDate == null) {
+			if (other.creationDate != null)
+				return false;
+		} else if (!creationDate.equals(other.creationDate))
+			return false;
+		if (id != 0 && other.id != 0)
+			if (id != other.id)
+				return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
 	}
 }

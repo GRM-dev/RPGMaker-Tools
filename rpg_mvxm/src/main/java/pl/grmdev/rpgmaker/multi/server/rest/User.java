@@ -4,31 +4,12 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.persistence.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
@@ -36,8 +17,7 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
-import pl.grmdev.rpgmaker.multi.server.database.Result;
+import pl.grmdev.rpgmaker.multi.server.database.*;
 
 /**
  * @author Levvy055
@@ -69,6 +49,7 @@ public class User {
 	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@Transient
 	private List<User> friends;
+	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
 	@Path("/{name}")
 	@GET
@@ -117,7 +98,7 @@ public class User {
 				return Result.badRequest(true,
 						"Payload wrong format or incomplete");
 			}
-			if (!name.equals(user.getUsername())) {
+			if (!name.toLowerCase().equals(user.getUsername().toLowerCase())) {
 				return Result.badRequest(true,
 						"Name in parameter is not the same as in body.");
 			}
@@ -127,6 +108,7 @@ public class User {
 			if (user.getEmail() == null) {
 				return Result.badRequest(true, "No e-mail provided.");
 			}
+			user.setUsername(user.getUsername().toLowerCase());
 			user.setRegisterDate(new Date());
 			DatabaseHandler.initConnection();
 			User user2 = H.save(user);
@@ -154,7 +136,8 @@ public class User {
 			if (!token.equals("token")) {
 				return Result.noAuth(true, "Wrong token: " + token);
 			}
-			if (!username.equals(jObj.getString("username"))) {
+			username = username.toLowerCase();
+			if (!username.equals(jObj.getString("username").toLowerCase())) {
 				return Result.noAuth(true, "No access for that user!");
 			}
 			String oldPswd = jObj.getString("oldPassword");
@@ -190,7 +173,8 @@ public class User {
 			if (!token.equals("token")) {
 				return Result.noAuth(true, "Wrong token: " + token);
 			}
-			if (!username.equals(jObj.getString("username"))) {
+			username = username.toLowerCase();
+			if (!username.equals(jObj.getString("username").toLowerCase())) {
 				return Result.noAuth(true, "No access for that user!");
 			}
 			String mail = jObj.getString("mail");
@@ -225,7 +209,8 @@ public class User {
 			if (!token.equals("token")) {
 				return Result.noAuth(true, "Wrong token: " + token);
 			}
-			if (!username.equals(jObj.getString("username"))) {
+			username = username.toLowerCase();
+			if (!username.equals(jObj.getString("username").toLowerCase())) {
 				return Result.noAuth(true, "No access for that user!");
 			}
 			String pswd = jObj.getString("password");
