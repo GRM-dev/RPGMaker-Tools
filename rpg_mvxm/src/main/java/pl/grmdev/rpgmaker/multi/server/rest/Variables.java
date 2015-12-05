@@ -3,13 +3,7 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.Path;
 
 /**
@@ -29,7 +23,8 @@ public class Variables {
 	private String varValue;
 	@OneToOne
 	@JoinColumn(name = "player_id")
-	private Player player;
+	private Character player;
+	
 	public int getId() {
 		return id;
 	}
@@ -48,10 +43,10 @@ public class Variables {
 	public void setVarValue(String varValue) {
 		this.varValue = varValue;
 	}
-	public Player getPlayer() {
+	public Character getPlayer() {
 		return player;
 	}
-	public void setPlayer(Player player) {
+	public void setPlayer(Character player) {
 		this.player = player;
 	}
 	

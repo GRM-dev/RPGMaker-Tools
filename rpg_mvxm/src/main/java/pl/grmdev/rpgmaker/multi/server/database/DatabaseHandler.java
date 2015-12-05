@@ -3,17 +3,11 @@
  */
 package pl.grmdev.rpgmaker.multi.server.database;
 
-import pl.grmdev.rpgmaker.multi.server.rest.Actor;
-import pl.grmdev.rpgmaker.multi.server.rest.Inventory;
-import pl.grmdev.rpgmaker.multi.server.rest.MultiplayerData;
-import pl.grmdev.rpgmaker.multi.server.rest.Player;
-import pl.grmdev.rpgmaker.multi.server.rest.Position;
-import pl.grmdev.rpgmaker.multi.server.rest.Switches;
-import pl.grmdev.rpgmaker.multi.server.rest.Token;
-import pl.grmdev.rpgmaker.multi.server.rest.User;
-import pl.grmdev.rpgmaker.multi.server.rest.Variables;
-
 import com.github.fluent.hibernate.factory.HibernateSessionFactory;
+
+import pl.grmdev.rpgmaker.multi.server.rest.*;
+import pl.grmdev.rpgmaker.multi.server.rest.Character;
+import pl.grmdev.rpgmaker.multi.server.rest.inv.*;
 
 /**
  * @author Levvy055
@@ -40,11 +34,12 @@ public final class DatabaseHandler {
             return;
         }
 
-        HibernateSessionFactory.Builder
-                .configureFromDefaultHibernateCfgXml()
-                .annotatedClasses(User.class, Token.class, Player.class, Position.class,
-                        Variables.class, Switches.class, Inventory.class, MultiplayerData.class,
-                        Actor.class).createSessionFactory();
+		HibernateSessionFactory.Builder
+				.configureFromDefaultHibernateCfgXml()
+                .annotatedClasses(User.class, Token.class, Character.class, Position.class,
+ Variables.class,
+						Switches.class, Inventory.class, Actor.class, Armor.class, Item.class, Weapon.class)
+				.createSessionFactory();
 
         configured = true;
     }

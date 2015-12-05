@@ -16,48 +16,50 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 
 import pl.grmdev.rpgmaker.multi.server.database.*;
+import pl.grmdev.rpgmaker.multi.server.rest.inv.Inventory;
 
 /**
  * @author Levvy055
  * 		
  */
 @Entity
-@Table(name = "players")
-@Path("/player")
-public class Player {
+@Table(name = "characters")
+@Path("/char")
+public class Character {
 	@Id
 	@GeneratedValue
 	private int id;
-	@Column(name = "name")
+	@Column(name = "name", nullable = false, unique = true)
 	private String name;
+	@Column(name = "date_created", nullable = false)
+	private Date creationDate;
+	@Column(name = "date_last_save")
+	private Date lastSaveDate;
+	@ManyToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 	@OneToOne
 	@JoinColumn(name = "pos_id")
-	private Position position;
+	private Position currentPosition;
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "character")
+	private List<Actor> actors;
 	@OneToOne
 	@JoinColumn(name = "inv_id")
 	private Inventory inventory;
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private List<Position> positions;
 	@OneToOne
 	@JoinColumn(name = "vars_id")
 	private Variables vars;
 	@OneToOne
 	@JoinColumn(name = "switches_id")
 	private Switches switches;
-	@OneToOne
-	@JoinColumn(name = "mdata_id")
-	private MultiplayerData mData;
-	@Column(name = "date_created")
-	private Date creationDate;
-	@Column(name = "date_last_save")
-	private Date lastSaveDate;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name = "f_actors")
-	private List<Actor> actors;
 	
 	@POST
 	@Path("/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addPlayer(@PathParam("username") String username, String body) {
+	public Response addPlayer(@PathParam("username") String username, @QueryParam("default") boolean def, String body) {
 		if (body == null || body.isEmpty()) {
 			return Result.badRequest(true, "Received empty request!");
 		}
@@ -78,7 +80,7 @@ public class Player {
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-			Player player = mapper.readValue(json.getJSONObject("player").toString(), Player.class);
+			Character player = mapper.readValue(json.getJSONObject("player").toString(), Character.class);
 			if (player == null) {
 				return Result.badRequest(true, "wrong player object received", json.getJSONObject("player").toString());
 			}
@@ -87,7 +89,10 @@ public class Player {
 				return Result.badRequest(true, "Wrong username format", pname);
 			}
 			player.setCreationDate(new Date());
-			Player p2 = H.save(player);
+			if (def) {
+				player.setNullToDefaults();
+			}
+			Character p2 = H.save(player);
 			if (player.equals(p2)) {
 				return Result.created(false, "Player created");
 			} else {
@@ -114,7 +119,7 @@ public class Player {
 		if (tokObj == null) {
 			return Result.noAuth(true, "Wrong token");
 		}
-		Player player = H.<Player> request(getClass()).eq("name", playerName).first();
+		Character player = H.<Character> request(getClass()).eq("name", playerName).first();
 		if (player == null) {
 			return Result.notFound(true, "Player " + playerName + " not exist!");
 		}
@@ -128,7 +133,7 @@ public class Player {
 		if (playerId == 0) {
 			return Result.badRequest(true, "Received no player id or id = 0!");
 		}
-		Player player = H.<Player> getById(Player.class, playerId);
+		Character player = H.<Character> getById(Character.class, playerId);
 		if (token == null || token.isEmpty()) {
 			return Result.noAuth(false, player.getName());
 		}
@@ -138,21 +143,94 @@ public class Player {
 	@GET
 	@Path("/name/{player}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPlayerName(@PathParam("player") int playerId) {
+	public Response getPlayerNameById(@PathParam("player") int playerId) {
 		if (playerId == 0) {
 			return Result.badRequest(true, "Received no player id or id = 0!");
 		}
 		DatabaseHandler.initConnection();
-		Player player = H.<Player> getById(Player.class, playerId);
+		Character player = H.<Character> getById(Character.class, playerId);
+		if (player == null) {
+			return Result.notFound(false, "Player not exists with that id: " + playerId);
+		}
 		return Result.json("{\"id\":" + playerId + ",\"name\":\"" + player.getName() + "\"}");
 	}
 
+	@PUT
+	@Path("{player}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response updatePlayer(@PathParam("player") String playerName, String body) {
+		if (body == null || body.isEmpty()) {
+			return Result.badRequest(true, "No request body!");
+		}
+		if (playerName == null || playerName.isEmpty()) {
+			return Result.badRequest(true, "Received no player name!");
+		}
+		try {
+			JSONObject json = new JSONObject(body);
+			String token = json.getString("authToken");
+			if (token == null || token.isEmpty()) {
+				return Result.noAuth(true, "No token provided!");
+			}
+			DatabaseHandler.initConnection();
+			Character player = H.<Character> request(Character.class).eq("name", playerName).first();
+			if (player == null) {
+				return Result.notFound(true, "Player " + playerName + " not found!");
+			}
+			if (!Token.verify(token, player.getId())) {
+				return Result.noAuth(true, "Wrong token!");
+			}
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+			Character playerNew = mapper.readValue(json.getJSONObject("player").toString(), Character.class);
+			player.updateFrom(playerNew);
+			H.saveOrUpdate(player);
+			return Result.success("updated!");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Result.exception(e);
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void setNullToDefaults() {
+		if (currentPosition == null) {
+			Position pos = new Position();
+			pos.setX(0);// TODO: make defaults correspond to game true vars
+			pos.setY(0);
+			pos.setDirection(0);
+			pos.setMap_id(0);
+			setCurrentPosition(pos);
+			DatabaseHandler.initConnection();
+			Position pos2 = H.save(pos);
+			if (!pos.equals(pos2)) {
+				System.out.println("Position saved but can be broken.");
+			}
+		}
+		if (inventory == null) {
+			Inventory inv = new Inventory();
+			setInventory(inv);
+		}
+	}
+	
+	/**
+	 * @param playerNew
+	 */
+	private void updateFrom(Character p) {
+		if (p.getCurrentPosition() != null && !p.getCurrentPosition().equals(getCurrentPosition())) {
+			// getPosition().updatePosition(getName(),p.getPosition().toString());
+			// TODO: make updates methods in subclasses
+		}
+	}
+	
 	/**
 	 * @return
 	 */
 	public boolean correct() {
-		if (getName() != null && getPosition() != null && getInventory() != null && getVars() != null
-				&& getSwitches() != null && getMData() != null && getActors() != null) {
+		if (getName() != null && getCurrentPosition() != null && getInventory() != null && getVars() != null
+				&& getSwitches() != null && getActors() != null) {
 			return true;
 		}
 		return false;
@@ -161,7 +239,7 @@ public class Player {
 	/**
 	 * @return
 	 */
-	public static boolean correct(Player player) {
+	public static boolean correct(Character player) {
 		if (player == null) {
 			return false;
 		}
@@ -180,11 +258,11 @@ public class Player {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Position getPosition() {
-		return position;
+	public Position getCurrentPosition() {
+		return currentPosition;
 	}
-	public void setPosition(Position position) {
-		this.position = position;
+	public void setCurrentPosition(Position position) {
+		this.currentPosition = position;
 	}
 	public Inventory getInventory() {
 		return inventory;
@@ -205,12 +283,14 @@ public class Player {
 		this.switches = switches;
 	}
 	
-	public MultiplayerData getMData() {
-		return mData;
+	public User getUser() {
+		return user;
 	}
-	public void setmData(MultiplayerData mData) {
-		this.mData = mData;
+
+	public void setUser(User user) {
+		this.user = user;
 	}
+
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -241,9 +321,9 @@ public class Player {
 			builder.append(name);
 			builder.append("\",\"");
 		}
-		if (position != null) {
+		if (currentPosition != null) {
 			builder.append("position\":\"");
-			builder.append(position);
+			builder.append(currentPosition);
 			builder.append("\",\"");
 		}
 		if (inventory != null) {
@@ -259,11 +339,6 @@ public class Player {
 		if (switches != null) {
 			builder.append("switches\":\"");
 			builder.append(switches);
-			builder.append("\",\"");
-		}
-		if (mData != null) {
-			builder.append("mData\":\"");
-			builder.append(mData);
 			builder.append("\",\"");
 		}
 		if (creationDate != null) {
@@ -302,7 +377,7 @@ public class Player {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Player other = (Player) obj;
+		Character other = (Character) obj;
 		if (creationDate == null) {
 			if (other.creationDate != null)
 				return false;

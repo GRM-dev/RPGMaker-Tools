@@ -19,7 +19,42 @@ public class Actor {
 	private int id;
 	@Column(name = "f_name")
 	private String name;
+	@Column(name = "f_active")
+	private boolean active;
 	@ManyToOne
-	@JoinColumn(name = "player_id")
-	private Player player;
+	@JoinColumn(name = "char_id")
+	private Character character;
+	
+	public int getId() {
+		return id;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public boolean isActive() {
+		return active;
+	}
+	
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	
+	public Character getCharacter() {
+		return character;
+	}
+	
+	public void setCharacter(Character character) {
+		this.character = character;
+	}
+	
 }

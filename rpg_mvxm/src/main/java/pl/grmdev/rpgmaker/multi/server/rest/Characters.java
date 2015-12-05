@@ -16,17 +16,17 @@ import pl.grmdev.rpgmaker.multi.server.database.*;
  * @author Levvy055
  *
  */
-@Path("players")
-public class Players {
+@Path("chars")
+public class Characters {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAll() {
 		DatabaseHandler.initConnection();
-		List<Player> playerList = H.<Player> request(Player.class).list();
+		List<Character> playerList = H.<Character> request(Character.class).list();
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
-		for (Player player : playerList) {
+		for (Character player : playerList) {
 			sb.append("{\"id\":" + player.getId() + ",\"name\":\"" + player.getName() + "\"},");
 		}
 		String r = sb.substring(0, sb.length() - 1) + "]";

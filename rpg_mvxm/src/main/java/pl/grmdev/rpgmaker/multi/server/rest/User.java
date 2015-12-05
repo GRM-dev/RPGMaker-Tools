@@ -33,24 +33,67 @@ public class User {
 	private int id;
 	@Column(name = "f_name", unique = true, nullable = false)
 	private String username;
+	@Column(name = "f_pasword", nullable = false)
+	private String password;
+	@Column(name = "f_email", nullable = false, unique = true)
+	private String email;
 	@Column(name = "register_date", nullable = false)
 	private Date registerDate;
 	@Column(name = "time_last_active")
 	private Date lastActive;
-	@Column(name = "f_pasword")
-	private String password;
-	@Column(name = "f_email", nullable = false, unique = true)
-	private String email;
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	private List<Token> tokens;
-	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@Transient
-	private List<Player> players;
-	// @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@Transient
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	private List<Character> characters;
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id") , inverseJoinColumns = @JoinColumn(name = "friend_id") )
 	private List<User> friends;
 	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
+	@POST
+	@Path("/{username}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response register(@PathParam("username") String username, String payload) {
+		if (username == null || username.isEmpty() || payload == null
+				|| payload.isEmpty()) {
+			return Result.badRequest(true, null, username, payload);
+		}
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.setDateFormat(
+					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+			User user = mapper.readValue(payload, getClass());
+			if (user == null) {
+				return Result.badRequest(true,
+						"Payload wrong format or incomplete");
+			}
+			if (!username.toLowerCase().equals(user.getUsername().toLowerCase())) {
+				return Result.badRequest(true,
+						"Name in parameter is not the same as in body.");
+			}
+			if (user.getPassword() == null) {
+				return Result.badRequest(true, "No password provided.");
+			}
+			if (user.getEmail() == null) {
+				return Result.badRequest(true, "No e-mail provided.");
+			}
+			user.setUsername(user.getUsername().toLowerCase());
+			user.setRegisterDate(new Date());
+			DatabaseHandler.initConnection();
+			User user2 = H.save(user);
+			if (user.equals(user2)) {
+				return Result.created(false, "User created successfully");
+			} else {
+				return Result.created(true,
+						"User propably created because some problems occured during request execution.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Result.exception(e);
+		}
+	}
+
 	@Path("/{name}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -75,50 +118,6 @@ public class User {
 			System.out.println("name: " + name + "\ntoken: " + token);
 			return Result.json(res);
 		} catch (HibernateException e) {
-			e.printStackTrace();
-			return Result.exception(e);
-		}
-	}
-	
-	@POST
-	@Path("/{user}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response register(@PathParam("user") String name, String payload) {
-		if (name == null || name.isEmpty() || payload == null
-				|| payload.isEmpty()) {
-			return Result.badRequest(true, null, name, payload);
-		}
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.setDateFormat(
-					new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-			User user = mapper.readValue(payload, getClass());
-			if (user == null) {
-				return Result.badRequest(true,
-						"Payload wrong format or incomplete");
-			}
-			if (!name.toLowerCase().equals(user.getUsername().toLowerCase())) {
-				return Result.badRequest(true,
-						"Name in parameter is not the same as in body.");
-			}
-			if (user.getPassword() == null) {
-				return Result.badRequest(true, "No password provided.");
-			}
-			if (user.getEmail() == null) {
-				return Result.badRequest(true, "No e-mail provided.");
-			}
-			user.setUsername(user.getUsername().toLowerCase());
-			user.setRegisterDate(new Date());
-			DatabaseHandler.initConnection();
-			User user2 = H.save(user);
-			if (user.equals(user2)) {
-				return Result.created(false, "User created successfully");
-			} else {
-				return Result.created(true,
-						"User propably created because some problems occured during request execution.");
-			}
-		} catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -295,10 +294,10 @@ public class User {
 			builder.append("lastActive\":\"");
 			builder.append(lastActive);
 		}
-		if (players != null) {
+		if (characters != null) {
 			builder.append("\",\"");
 			builder.append("players\":\"");
-			builder.append("{" + players + "}");
+			builder.append("{" + characters + "}");
 			
 		}
 		if (friends != null) {
@@ -355,12 +354,12 @@ public class User {
 		this.password = password;
 	}
 	
-	public List<Player> getPlayers() {
-		return players;
+	public List<Character> getCharacters() {
+		return characters;
 	}
 	
-	public void setPlayers(List<Player> players) {
-		this.players = players;
+	public void setCharacters(List<Character> players) {
+		this.characters = players;
 	}
 	
 	public List<User> getFriends() {

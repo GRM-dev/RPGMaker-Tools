@@ -3,13 +3,7 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.ws.rs.Path;
 
 /**
@@ -25,25 +19,31 @@ public class Position {
 	private int id;
 	@OneToOne
 	@JoinColumn(name = "player_id")
-	private Player player;
+	private Character player;
 	@Column(name = "pos_x")
 	private int x;
 	@Column(name = "pos_y")
 	private int y;
-	@Column(name = "map_id")
+	@Column(name = "map_id", nullable = false)
 	private int map_id;
 	@Column(name = "f_dir")
 	private int direction;
+	@ManyToOne
+	@JoinColumn(name = "char_id")
+	private Character character;
+	@Column(name = "f_order")
+	private int order;
+	
 	public int getId() {
 		return id;
 	}
 	public void setId(int id) {
 		this.id = id;
 	}
-	public Player getPlayer() {
+	public Character getPlayer() {
 		return player;
 	}
-	public void setPlayer(Player player) {
+	public void setPlayer(Character player) {
 		this.player = player;
 	}
 	public int getX() {
@@ -69,6 +69,18 @@ public class Position {
 	}
 	public void setDirection(int direction) {
 		this.direction = direction;
+	}
+	public int getOrder() {
+		return order;
+	}
+	public void setOrder(int order) {
+		this.order = order;
+	}
+	public Character getCharacter() {
+		return character;
+	}
+	public void setCharacter(Character character) {
+		this.character = character;
 	}
 	
 }
