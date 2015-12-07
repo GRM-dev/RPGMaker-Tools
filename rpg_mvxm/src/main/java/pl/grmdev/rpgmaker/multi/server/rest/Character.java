@@ -35,23 +35,23 @@ public class Character {
 	private Date creationDate;
 	@Column(name = "date_last_save")
 	private Date lastSaveDate;
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "pos_id")
 	private Position currentPosition;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "character")
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "character")
 	private List<Actor> actors;
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "inv_id")
 	private Inventory inventory;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Position> positions;
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "vars_id")
 	private Variables vars;
-	@OneToOne
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "switches_id")
 	private Switches switches;
 	
@@ -59,7 +59,7 @@ public class Character {
 	@Path("/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response addPlayer(@PathParam("username") String username, @QueryParam("default") boolean def, String body) {
+	public Response addCharacter(@PathParam("username") String username, @QueryParam("default") boolean def, String body) {
 		if (body == null || body.isEmpty()) {
 			return Result.badRequest(true, "Received empty request!");
 		}
@@ -80,23 +80,24 @@ public class Character {
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-			Character player = mapper.readValue(json.getJSONObject("player").toString(), Character.class);
-			if (player == null) {
-				return Result.badRequest(true, "wrong player object received", json.getJSONObject("player").toString());
+			Character character = mapper.readValue(json.getJSONObject("character").toString(), Character.class);
+			if (character == null) {
+				return Result.badRequest(true, "wrong character object received",
+						json.getJSONObject("character").toString());
 			}
-			String pname = player.getName();
-			if (pname == null || pname.isEmpty() || !pname.matches(User.USERNAME_PATTERN)) {
-				return Result.badRequest(true, "Wrong username format", pname);
+			String cname = character.getName();
+			if (cname == null || cname.isEmpty() || !cname.matches(User.USERNAME_PATTERN)) {
+				return Result.badRequest(true, "Wrong username format", cname);
 			}
-			player.setCreationDate(new Date());
+			character.setCreationDate(new Date());
 			if (def) {
-				player.setNullToDefaults();
+				character.setNullToDefaults();
 			}
-			Character p2 = H.save(player);
-			if (player.equals(p2)) {
-				return Result.created(false, "Player created");
+			Character p2 = H.save(character);
+			if (character.equals(p2)) {
+				return Result.created(false, "Character created");
 			} else {
-				return Result.created(true, "Player created but not sure!");
+				return Result.created(true, "Character created but not sure!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -105,66 +106,66 @@ public class Character {
 	}
 	
 	@GET
-	@Path("/{player}")
+	@Path("/{char}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPlayer(@PathParam("player") String playerName, @QueryParam("authToken") String token) {
+	public Response getChar(@PathParam("char") String charName, @QueryParam("authToken") String token) {
 		if (token == null || token.isEmpty()) {
 			return Result.noAuth(true, "No token!");
 		}
-		if (playerName == null || playerName.isEmpty()) {
-			return Result.badRequest(true, "Received no player name!");
+		if (charName == null || charName.isEmpty()) {
+			return Result.badRequest(true, "Received no character name!");
 		}
 		DatabaseHandler.initConnection();
 		Token tokObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
 		if (tokObj == null) {
 			return Result.noAuth(true, "Wrong token");
 		}
-		Character player = H.<Character> request(getClass()).eq("name", playerName).first();
-		if (player == null) {
-			return Result.notFound(true, "Player " + playerName + " not exist!");
+		Character character = H.<Character> request(getClass()).eq("name", charName).first();
+		if (character == null) {
+			return Result.notFound(true, "Character " + charName + " not exist!");
 		}
-		return Result.json(player.toString());
+		return Result.json(character.toString());
 	}
 	
 	@GET
-	@Path("/id/{player}")
+	@Path("/id/{char}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPlayerById(@PathParam("player") int playerId, @QueryParam("authToken") String token) {
-		if (playerId == 0) {
-			return Result.badRequest(true, "Received no player id or id = 0!");
+	public Response getCharById(@PathParam("char") int charId, @QueryParam("authToken") String token) {
+		if (charId == 0) {
+			return Result.badRequest(true, "Received no character id or id = 0!");
 		}
-		Character player = H.<Character> getById(Character.class, playerId);
+		Character character = H.<Character> getById(Character.class, charId);
 		if (token == null || token.isEmpty()) {
-			return Result.noAuth(false, player.getName());
+			return Result.noAuth(false, character.getName());
 		}
-		return getPlayer(player.getName(), token);
+		return getChar(character.getName(), token);
 	}
 	
 	@GET
-	@Path("/name/{player}")
+	@Path("/name/{char}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPlayerNameById(@PathParam("player") int playerId) {
-		if (playerId == 0) {
-			return Result.badRequest(true, "Received no player id or id = 0!");
+	public Response getCharNameById(@PathParam("char") int charId) {
+		if (charId == 0) {
+			return Result.badRequest(true, "Received no character id or id = 0!");
 		}
 		DatabaseHandler.initConnection();
-		Character player = H.<Character> getById(Character.class, playerId);
-		if (player == null) {
-			return Result.notFound(false, "Player not exists with that id: " + playerId);
+		Character character = H.<Character> getById(Character.class, charId);
+		if (character == null) {
+			return Result.notFound(false, "Player not exists with that id: " + charId);
 		}
-		return Result.json("{\"id\":" + playerId + ",\"name\":\"" + player.getName() + "\"}");
+		return Result.json("{\"id\":" + charId + ",\"name\":\"" + character.getName() + "\"}");
 	}
 
 	@PUT
-	@Path("{player}")
+	@Path("{char}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response updatePlayer(@PathParam("player") String playerName, String body) {
+	public Response updateChar(@PathParam("char") String charName, String body) {
 		if (body == null || body.isEmpty()) {
 			return Result.badRequest(true, "No request body!");
 		}
-		if (playerName == null || playerName.isEmpty()) {
-			return Result.badRequest(true, "Received no player name!");
+		if (charName == null || charName.isEmpty()) {
+			return Result.badRequest(true, "Received no character name!");
 		}
 		try {
 			JSONObject json = new JSONObject(body);
@@ -173,18 +174,18 @@ public class Character {
 				return Result.noAuth(true, "No token provided!");
 			}
 			DatabaseHandler.initConnection();
-			Character player = H.<Character> request(Character.class).eq("name", playerName).first();
-			if (player == null) {
-				return Result.notFound(true, "Player " + playerName + " not found!");
+			Character character = H.<Character> request(Character.class).eq("name", charName).first();
+			if (character == null) {
+				return Result.notFound(true, "Character " + charName + " not found!");
 			}
-			if (!Token.verify(token, player.getId())) {
+			if (!Token.verify(token, character.getId())) {
 				return Result.noAuth(true, "Wrong token!");
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-			Character playerNew = mapper.readValue(json.getJSONObject("player").toString(), Character.class);
-			player.updateFrom(playerNew);
-			H.saveOrUpdate(player);
+			Character charNew = mapper.readValue(json.getJSONObject("character").toString(), Character.class);
+			character.updateFrom(charNew);
+			H.saveOrUpdate(character);
 			return Result.success("updated!");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -216,10 +217,10 @@ public class Character {
 	}
 	
 	/**
-	 * @param playerNew
+	 * @param c
 	 */
-	private void updateFrom(Character p) {
-		if (p.getCurrentPosition() != null && !p.getCurrentPosition().equals(getCurrentPosition())) {
+	private void updateFrom(Character c) {
+		if (c.getCurrentPosition() != null && !c.getCurrentPosition().equals(getCurrentPosition())) {
 			// getPosition().updatePosition(getName(),p.getPosition().toString());
 			// TODO: make updates methods in subclasses
 		}
@@ -239,11 +240,11 @@ public class Character {
 	/**
 	 * @return
 	 */
-	public static boolean correct(Character player) {
-		if (player == null) {
+	public static boolean correct(Character c) {
+		if (c == null) {
 			return false;
 		}
-		return player.correct();
+		return c.correct();
 	}
 	
 	public int getId() {

@@ -62,13 +62,19 @@ public class Token {
 			char[] token = null;
 			boolean exists = true;
 			int attempts = 0;
+			List<Token> tokens = user.getTokens();
 			do {
 				attempts++;
 				token = genToken(username, user.getId());
-				Token tokenTemp = H.<Token> request(getClass())
-						.eq("token", token).first();
+				Iterator<Token> it = tokens.iterator();
+				Token tokenTemp = null;
+				while (it.hasNext()) {
+					Token tT = it.next();
+					if (tT.getToken().equals(token)) {
+						tokenTemp = tT;
+					}
+				}
 				exists = tokenTemp != null;
-				
 				if (tokenTemp != null) {
 					System.out.println(new String(tokenTemp.getToken()));
 					System.out.println(tokenTemp.getId() + " | " + attempts);

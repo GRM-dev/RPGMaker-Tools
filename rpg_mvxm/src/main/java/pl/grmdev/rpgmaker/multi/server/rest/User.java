@@ -41,12 +41,12 @@ public class User {
 	private Date registerDate;
 	@Column(name = "time_last_active")
 	private Date lastActive;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Token> tokens;
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Character> characters;
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id") , inverseJoinColumns = @JoinColumn(name = "friend_id") )
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id") , inverseJoinColumns = @JoinColumn(name = "friend_id", referencedColumnName = "id") )
 	private List<User> friends;
 	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
@@ -94,28 +94,27 @@ public class User {
 		}
 	}
 
-	@Path("/{name}")
+	@Path("/{username}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("name") String name,
+	public Response get(@PathParam("username") String username,
 			@QueryParam("authToken") String token) {
 		try {
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", name)
+			User user = H.<User> request(User.class).eq("username", username).fetchJoin("characters", "friends")
 					.first();
 			if (user == null) {
 				return Result.notFound(false,
-						"User with name " + name + "was not found");
+ "User with name " + username + "was not found");
 			}
 			String res;
-			if (token != null && !token.isEmpty()
-					&& token.trim().equals("token")) {
+			if (token != null && !token.isEmpty() && Token.verify(token, user.getId())) {
 				res = user.toString();
 			} else {
 				res = "{\"id\": " + user.getId() + ", \"name\": \""
 						+ user.getUsername() + "\"}";
 			}
-			System.out.println("name: " + name + "\ntoken: " + token);
+			System.out.println("name: " + username + "\ntoken: " + token);
 			return Result.json(res);
 		} catch (HibernateException e) {
 			e.printStackTrace();
@@ -294,16 +293,16 @@ public class User {
 			builder.append("lastActive\":\"");
 			builder.append(lastActive);
 		}
-		if (characters != null) {
+		if (getCharacters() != null) {
 			builder.append("\",\"");
 			builder.append("players\":\"");
-			builder.append("{" + characters + "}");
+			builder.append("{" + getCharacters() + "}");
 			
 		}
-		if (friends != null) {
+		if (getFriends() != null) {
 			builder.append("\",\"");
 			builder.append("friends\":\"");
-			builder.append(friends);
+			builder.append(getFriends());
 		}
 		if (email != null) {
 			builder.append("\",\"");
