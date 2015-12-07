@@ -14,8 +14,10 @@ import javax.ws.rs.core.*;
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
+import com.github.fluent.hibernate.request.HibernateRequest;
 
 import pl.grmdev.rpgmaker.multi.server.database.*;
 
@@ -47,6 +49,7 @@ public class User {
 	private List<Character> characters;
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id") , inverseJoinColumns = @JoinColumn(name = "friend_id", referencedColumnName = "id") )
+	@JsonManagedReference
 	private List<User> friends;
 	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
@@ -101,14 +104,14 @@ public class User {
 			@QueryParam("authToken") String token) {
 		try {
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username).fetchJoin("characters", "friends")
-					.first();
+			HibernateRequest<User> request = H.<User> request(User.class);
+			User user = request.fetchJoin("friends").eq("username", username).first();
 			if (user == null) {
-				return Result.notFound(false,
- "User with name " + username + "was not found");
+				return Result.notFound(false, "User with name " + username + "was not found");
 			}
 			String res;
 			if (token != null && !token.isEmpty() && Token.verify(token, user.getId())) {
+				// user = request.list().get(user.getId());
 				res = user.toString();
 			} else {
 				res = "{\"id\": " + user.getId() + ", \"name\": \""
@@ -293,16 +296,18 @@ public class User {
 			builder.append("lastActive\":\"");
 			builder.append(lastActive);
 		}
-		if (getCharacters() != null) {
+		List<User> friendsT = this.getFriends();
+		if (friendsT != null) {
 			builder.append("\",\"");
-			builder.append("players\":\"");
-			builder.append("{" + getCharacters() + "}");
-			
-		}
-		if (getFriends() != null) {
-			builder.append("\",\"");
-			builder.append("friends\":\"");
-			builder.append(getFriends());
+			builder.append("friends\":[");
+			for (Iterator<User> iterator = friendsT.iterator(); iterator.hasNext();) {
+				User user = iterator.next();
+				builder.append("{\"" + user.getId() + "\":\"" + user.getUsername() + "\"}");
+				if (iterator.hasNext()) {
+					builder.append(',');
+				}
+			}
+			builder.append("], \"count\":\"" + friendsT.size());
 		}
 		if (email != null) {
 			builder.append("\",\"");
@@ -353,14 +358,6 @@ public class User {
 		this.password = password;
 	}
 	
-	public List<Character> getCharacters() {
-		return characters;
-	}
-	
-	public void setCharacters(List<Character> players) {
-		this.characters = players;
-	}
-	
 	public List<User> getFriends() {
 		return friends;
 	}
@@ -383,5 +380,13 @@ public class User {
 	
 	public void setTokens(List<Token> tokens) {
 		this.tokens = tokens;
+	}
+	
+	public List<Character> getCharacters() {
+		return characters;
+	}
+	
+	public void setCharacters(List<Character> characters) {
+		this.characters = characters;
 	}
 }
