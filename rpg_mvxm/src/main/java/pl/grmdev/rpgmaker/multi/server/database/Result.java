@@ -6,6 +6,8 @@ package pl.grmdev.rpgmaker.multi.server.database;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.*;
 
+import org.json.JSONObject;
+
 /**
  * @author Levvy055
  *
@@ -15,6 +17,8 @@ public class Result {
 	private boolean success;
 	private boolean error;
 	private String msg;
+	private boolean json;
+	private JSONObject jsonObject;
 	
 	/**
 	 * @param success
@@ -24,6 +28,13 @@ public class Result {
 		this.success = success;
 		this.msg = msg;
 		this.error = error;
+		this.json = false;
+	}
+	
+	private Result(boolean success, boolean error, JSONObject jObj) {
+		this(success, error, "");
+		this.json = true;
+		this.jsonObject = jObj;
 	}
 	
 	public static Response json(String json) {
@@ -52,6 +63,15 @@ public class Result {
 	 */
 	public static Response created(boolean warning, String msg) {
 		return Response.status(Status.CREATED).entity(new Result(true, warning, msg).asJson()).build();
+	}
+	
+	/**
+	 * @param warning
+	 * @param jObj
+	 * @return
+	 */
+	public static Response created(boolean warning, JSONObject jObj) {
+		return Response.status(Status.CREATED).entity(new Result(true, warning, jObj).asJson()).build();
 	}
 	
 	/**
@@ -120,6 +140,11 @@ public class Result {
 				builder.append("message\":\"");
 			}
 			builder.append(msg.replace("\"", "'"));
+		}
+		if (json) {
+			builder.append(", \"body\":{");
+			builder.append(jsonObject.toString());
+			builder.append("}");
 		}
 		builder.append("\"} ");
 		return builder.toString();

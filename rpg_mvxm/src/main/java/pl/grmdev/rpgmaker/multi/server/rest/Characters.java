@@ -26,8 +26,12 @@ public class Characters {
 		List<Character> playerList = H.<Character> request(Character.class).list();
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
+		if (playerList != null && playerList.size() > 0) {
 		for (Character player : playerList) {
 			sb.append("{\"id\":" + player.getId() + ",\"name\":\"" + player.getName() + "\"},");
+			}
+		} else {
+			sb.append(' ');
 		}
 		String r = sb.substring(0, sb.length() - 1) + "]";
 		return Result.json(r);

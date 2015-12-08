@@ -33,7 +33,7 @@ public class Token {
 	@Column(name = "f_expiration_time", nullable = false)
 	private Date expirationTime;
 	@JoinColumn(name = "user_id", nullable = false)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 	private static final Random random = new Random();
 	public static final String CHARS = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ234567890!@_-$";
@@ -54,7 +54,7 @@ public class Token {
 				return Result.badRequest(true, "Wrong credentials!");
 			}
 			DatabaseHandler.initConnection();
-			User user = H.<User> request(User.class).eq("username", username)
+			User user = H.<User> request(User.class).fetchJoin("tokens").eq("username", username)
 					.eq("password", pswd).first();
 			if (user == null) {
 				return Result.badRequest(true, "Wrong credentials!");
@@ -173,9 +173,11 @@ public class Token {
 	 */
 	public static boolean verify(String token, int id) {
 		if (token != null && !token.isEmpty()) {
-			Token tokenObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
-			if (tokenObj != null) {
-				if (tokenObj.getUser().getId() == id) {
+			List<Token> tokenList = H.<Token> request(Token.class).fetchJoin("user").eq("token", token.toCharArray()).list();
+			if (tokenList != null && tokenList.size() > 0) {
+				Token tokenObj = tokenList.get(0);
+				if (tokenObj != null && tokenObj.getUser().getId() == id
+						&& tokenObj.getExpirationTime().after(new Date())) {
 					return true;
 				}
 			}

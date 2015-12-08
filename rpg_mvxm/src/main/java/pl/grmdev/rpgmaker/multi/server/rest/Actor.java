@@ -21,7 +21,7 @@ public class Actor {
 	private String name;
 	@Column(name = "f_active")
 	private boolean active;
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "char_id")
 	private Character character;
 	

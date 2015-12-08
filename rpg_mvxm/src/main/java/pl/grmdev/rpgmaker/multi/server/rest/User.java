@@ -8,13 +8,16 @@ import java.util.*;
 import java.util.regex.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 
 import org.hibernate.HibernateException;
+import org.hibernate.annotations.*;
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 import com.github.fluent.hibernate.request.HibernateRequest;
@@ -46,10 +49,10 @@ public class User {
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Token> tokens;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<Character> characters;
+	@Fetch(FetchMode.SUBSELECT)
+	private Set<Character> characters;
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id") , inverseJoinColumns = @JoinColumn(name = "friend_id", referencedColumnName = "id") )
-	@JsonManagedReference
 	private List<User> friends;
 	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
@@ -105,13 +108,12 @@ public class User {
 		try {
 			DatabaseHandler.initConnection();
 			HibernateRequest<User> request = H.<User> request(User.class);
-			User user = request.fetchJoin("friends").eq("username", username).first();
+			User user = request.fetchJoin("friends", "characters").eq("username", username).list().get(0);
 			if (user == null) {
 				return Result.notFound(false, "User with name " + username + "was not found");
 			}
 			String res;
 			if (token != null && !token.isEmpty() && Token.verify(token, user.getId())) {
-				// user = request.list().get(user.getId());
 				res = user.toString();
 			} else {
 				res = "{\"id\": " + user.getId() + ", \"name\": \""
@@ -296,13 +298,26 @@ public class User {
 			builder.append("lastActive\":\"");
 			builder.append(lastActive);
 		}
+		Set<Character> charsT = this.getCharacters();
+		if (charsT != null) {
+			builder.append("\",\"");
+			builder.append("characters\":[");
+			for (Iterator<Character> iterator = charsT.iterator(); iterator.hasNext();) {
+				Character character = iterator.next();
+				builder.append("{\"id\":" + character.getId() + ", \"name\":\"" + character.getName() + "\"}");
+				if (iterator.hasNext()) {
+					builder.append(',');
+				}
+			}
+			builder.append("], \"count\":\"" + charsT.size());
+		}
 		List<User> friendsT = this.getFriends();
 		if (friendsT != null) {
 			builder.append("\",\"");
 			builder.append("friends\":[");
 			for (Iterator<User> iterator = friendsT.iterator(); iterator.hasNext();) {
 				User user = iterator.next();
-				builder.append("{\"" + user.getId() + "\":\"" + user.getUsername() + "\"}");
+				builder.append("{\"id\":" + user.getId() + ", \"name\":\"" + user.getUsername() + "\"}");
 				if (iterator.hasNext()) {
 					builder.append(',');
 				}
@@ -382,11 +397,11 @@ public class User {
 		this.tokens = tokens;
 	}
 	
-	public List<Character> getCharacters() {
+	public Set<Character> getCharacters() {
 		return characters;
 	}
 	
-	public void setCharacters(List<Character> characters) {
+	public void setCharacters(Set<Character> characters) {
 		this.characters = characters;
 	}
 }

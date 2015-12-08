@@ -89,6 +89,7 @@ public class Character {
 			if (cname == null || cname.isEmpty() || !cname.matches(User.USERNAME_PATTERN)) {
 				return Result.badRequest(true, "Wrong username format", cname);
 			}
+			character.setUser(user);
 			character.setCreationDate(new Date());
 			if (def) {
 				character.setNullToDefaults();
