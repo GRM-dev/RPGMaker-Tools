@@ -4,7 +4,8 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.*;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 
 import org.json.JSONObject;
 
@@ -58,8 +59,10 @@ public class Result {
 	
 	/**
 	 * @param warning
+	 *            true if there was warning during execution
 	 * @param msg
-	 * @return
+	 *            message to send
+	 * @return {@link Response}
 	 */
 	public static Response created(boolean warning, String msg) {
 		return Response.status(Status.CREATED).entity(new Result(true, warning, msg).asJson()).build();
@@ -67,8 +70,10 @@ public class Result {
 	
 	/**
 	 * @param warning
+	 *            true if there was warning during execution
 	 * @param jObj
-	 * @return
+	 *            iinner json object
+	 * @return {@link Response}
 	 */
 	public static Response created(boolean warning, JSONObject jObj) {
 		return Response.status(Status.CREATED).entity(new Result(true, warning, jObj).asJson()).build();
@@ -76,9 +81,12 @@ public class Result {
 	
 	/**
 	 * @param error
+	 *            true if there was error during execution
 	 * @param msg
+	 *            message to send
 	 * @param params
-	 * @return
+	 *            additional parameters vars
+	 * @return {@link Response}
 	 */
 	public static Response badRequest(boolean error, String msg, String... params) {
 		msg = "{\"Message\": \"" + msg;
@@ -119,7 +127,7 @@ public class Result {
 	}
 	
 	/**
-	 * @return
+	 * @return Result object in JSON format
 	 */
 	public String asJson() {
 		return toString();

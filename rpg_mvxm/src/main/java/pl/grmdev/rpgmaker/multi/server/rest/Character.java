@@ -4,11 +4,30 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
-import javax.persistence.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
 
@@ -213,6 +232,7 @@ public class Character {
 	
 	/**
 	 * @param c
+	 *            character from which current should be updated
 	 */
 	private void updateFrom(Character c) {
 		// if (c.getCurrentPosition() != null &&
@@ -223,7 +243,8 @@ public class Character {
 	}
 	
 	/**
-	 * @return
+	 * @return true if has name, current position, inventory, vars, switches,
+	 *         actors
 	 */
 	public boolean correct() {
 		if (getName() != null && getCurrentPosition() != null && getInventory() != null && getVars() != null
@@ -234,7 +255,10 @@ public class Character {
 	}
 	
 	/**
-	 * @return
+	 * @param c
+	 *            character object to check
+	 * @return true if not null and has name, current position, inventory, vars,
+	 *         switches, actors
 	 */
 	public static boolean correct(Character c) {
 		if (c == null) {

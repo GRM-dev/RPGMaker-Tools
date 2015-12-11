@@ -3,9 +3,8 @@
  */
 package pl.grmdev.rpgmaker.multi.server.listeners;
 
-import javax.servlet.*;
-
-import org.apache.log4j.Logger;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 import com.github.fluent.hibernate.factory.HibernateSessionFactory;
 
@@ -25,8 +24,6 @@ public class RpgServerContextListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		CLogger.initLogger();
-		Logger l = Logger.getLogger("sql");
-		l.info("RPG Server App initialization");
 		CLogger.info("RPG Server App initializing ...");
 		DatabaseHandler.initConnection();
 		CLogger.info("Connection initialized");
@@ -39,7 +36,7 @@ public class RpgServerContextListener implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent sce) {
 		HibernateSessionFactory.closeSessionFactory();
 		CLogger.info("RPG Server App closing ...");
-		CLogger.closeLogger();
+		CLogger.closeLoggers();
 	}
 	
 }

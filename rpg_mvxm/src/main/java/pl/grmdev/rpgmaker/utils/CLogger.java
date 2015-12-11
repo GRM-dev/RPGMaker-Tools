@@ -1,25 +1,29 @@
 package pl.grmdev.rpgmaker.utils;
 
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
-import javax.persistence.*;
 import javax.ws.rs.Path;
 
-@Entity
-@Table(name = "rpg_logs")
 @Path("logs")
 public class CLogger {
 
-	private static Logger logger;
+	private static Logger fileLogger;
+	private static org.apache.log4j.Logger dbLogger;
 	private static String logFileName = "info.log";
 	private static String locPath = "logs\\";
-	private static boolean dbEnabled = false;
 
 	public static void initLogger() {
-		logger = Logger.getLogger(logFileName);
+		fileLogger = Logger.getLogger(logFileName);
 		FileHandler fHandler = null;
 		File mainDir = new File(locPath);
 		try {
@@ -34,28 +38,43 @@ public class CLogger {
 		catch (SecurityException | IOException e) {
 			e.printStackTrace();
 		}
-		logger.addHandler(fHandler);
+		fileLogger.addHandler(fHandler);
+		dbLogger = org.apache.log4j.Logger.getLogger("sql");
 	}
 
 	public static void info(String msg) {
-		if (logger != null) logger.info(msg);
+		if (fileLogger != null)
+			fileLogger.info(msg);
+		if (dbLogger != null)
+			dbLogger.info(msg);
 	}
 
 	public static void log(Level level, String msg, Throwable thrown) {
-		if (logger != null) logger.log(level, msg, thrown);
+		if (fileLogger != null) fileLogger.log(level, msg, thrown);
+		if (dbLogger != null) {
+			if (level == Level.SEVERE) {
+				dbLogger.error(msg, thrown);
+			} else if (level == Level.WARNING) {
+				dbLogger.warn(msg, thrown);
+			} else if (level == Level.INFO) {
+				dbLogger.info(msg, thrown);
+			} else {
+				dbLogger.info("ULC: " + msg, thrown);
+			}
+		}
 	}
 
 	public static void logException(Exception e) {
 		log(Level.SEVERE, e.getMessage(), e);
 	}
 
-	public static void setLogger(Logger logger) {
-		CLogger.logger = logger;
+	public static void setFileLogger(Logger logger) {
+		CLogger.fileLogger = logger;
 	}
 
-	public static void closeLogger() {
-		Handler handler = logger.getHandlers()[0];
-		logger.removeHandler(handler);
+	public static void closeLoggers() {
+		Handler handler = fileLogger.getHandlers()[0];
+		fileLogger.removeHandler(handler);
 		handler.close();
 	}
 
