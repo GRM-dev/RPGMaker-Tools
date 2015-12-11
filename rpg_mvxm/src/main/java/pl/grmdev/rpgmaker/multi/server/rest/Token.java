@@ -14,8 +14,6 @@ import org.json.JSONObject;
 
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
-
 /**
  * @author Levvy055
  * 		
@@ -53,7 +51,6 @@ public class Token {
 					|| pswd == null | pswd.isEmpty()) {
 				return Result.badRequest(true, "Wrong credentials!");
 			}
-			DatabaseHandler.initConnection();
 			User user = H.<User> request(User.class).fetchJoin("tokens").eq("username", username)
 					.eq("password", pswd).first();
 			if (user == null) {
@@ -154,7 +151,6 @@ public class Token {
 		}
 		System.out.println(token);
 		try {
-			DatabaseHandler.initConnection();
 			Token tokenObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
 			if (tokenObj == null) {
 				return Result.notFound(true, "token not exists!");

@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
 import pl.grmdev.rpgmaker.multi.server.rest.inv.Inventory;
 
 /**
@@ -69,7 +68,6 @@ public class Character {
 		try {
 			JSONObject json = new JSONObject(body);
 			String token = json.getString("authToken");
-			DatabaseHandler.initConnection();
 			username = username.toLowerCase();
 			User user = H.<User> request(User.class).eq("username", username).first();
 			if (user == null) {
@@ -116,7 +114,6 @@ public class Character {
 		if (charName == null || charName.isEmpty()) {
 			return Result.badRequest(true, "Received no character name!");
 		}
-		DatabaseHandler.initConnection();
 		Token tokObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
 		if (tokObj == null) {
 			return Result.noAuth(true, "Wrong token");
@@ -149,7 +146,6 @@ public class Character {
 		if (charId == 0) {
 			return Result.badRequest(true, "Received no character id or id = 0!");
 		}
-		DatabaseHandler.initConnection();
 		Character character = H.<Character> getById(Character.class, charId);
 		if (character == null) {
 			return Result.notFound(false, "Player not exists with that id: " + charId);
@@ -174,7 +170,6 @@ public class Character {
 			if (token == null || token.isEmpty()) {
 				return Result.noAuth(true, "No token provided!");
 			}
-			DatabaseHandler.initConnection();
 			Character character = H.<Character> request(Character.class).eq("name", charName).first();
 			if (character == null) {
 				return Result.notFound(true, "Character " + charName + " not found!");
@@ -205,7 +200,6 @@ public class Character {
 			pos.setDirection(0);
 			pos.setMap_id(0);
 			setCurrentPosition(pos);
-			DatabaseHandler.initConnection();
 			Position pos2 = H.save(pos);
 			if (!pos.equals(pos2)) {
 				System.out.println("Position saved but can be broken.");
@@ -221,10 +215,11 @@ public class Character {
 	 * @param c
 	 */
 	private void updateFrom(Character c) {
-		if (c.getCurrentPosition() != null && !c.getCurrentPosition().equals(getCurrentPosition())) {
-			// getPosition().updatePosition(getName(),p.getPosition().toString());
-			// TODO: make updates methods in subclasses
-		}
+		// if (c.getCurrentPosition() != null &&
+		// !c.getCurrentPosition().equals(getCurrentPosition())) {
+		// getCurrentPosition().updatePosition(getName(),c.getCurrentPosition().toString());
+		// TODO: make updates methods in subclasses
+		// }
 	}
 	
 	/**
@@ -385,9 +380,8 @@ public class Character {
 				return false;
 		} else if (!creationDate.equals(other.creationDate))
 			return false;
-		if (id != 0 && other.id != 0)
-			if (id != other.id)
-				return false;
+		if (id != 0 && other.id != 0 && id != other.id)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;

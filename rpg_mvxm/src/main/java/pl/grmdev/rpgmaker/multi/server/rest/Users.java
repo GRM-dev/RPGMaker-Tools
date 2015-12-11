@@ -12,8 +12,6 @@ import org.hibernate.HibernateException;
 
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
-
 @Path("users")
 public class Users {
 	
@@ -22,7 +20,6 @@ public class Users {
 	public Response getUsers() {
 		String res = "[";
 		try{
-			DatabaseHandler.initConnection();
 			List<User> users = H.<User> request(User.class).list();
 		for (User user : users) {
 			res += "{\"id\": " + user.getId() + ",";

@@ -20,7 +20,7 @@ public class MainServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		try {
 			ServletOutputStream os = resp.getOutputStream();
-			os.write(("Hello from RPG Maker VX Server ;)  V: 1").getBytes());
+			os.write("Hello from RPG Maker VX Server ;)  V: 1".getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

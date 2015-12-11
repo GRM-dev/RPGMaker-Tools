@@ -22,8 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 import com.github.fluent.hibernate.request.HibernateRequest;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
-
 /**
  * @author Levvy055
  * 		
@@ -46,6 +44,8 @@ public class User {
 	private Date registerDate;
 	@Column(name = "time_last_active")
 	private Date lastActive;
+	@Column(name = "f_user_level", nullable = false)
+	private int level;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<Token> tokens;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -86,7 +86,6 @@ public class User {
 			}
 			user.setUsername(user.getUsername().toLowerCase());
 			user.setRegisterDate(new Date());
-			DatabaseHandler.initConnection();
 			User user2 = H.save(user);
 			if (user.equals(user2)) {
 				return Result.created(false, "User created successfully");
@@ -106,7 +105,6 @@ public class User {
 	public Response get(@PathParam("username") String username,
 			@QueryParam("authToken") String token) {
 		try {
-			DatabaseHandler.initConnection();
 			HibernateRequest<User> request = H.<User> request(User.class);
 			User user = request.fetchJoin("friends", "characters").eq("username", username).list().get(0);
 			if (user == null) {
@@ -145,7 +143,6 @@ public class User {
 			}
 			String oldPswd = jObj.getString("oldPassword");
 			String newPswd = jObj.getString("newPassword");
-			DatabaseHandler.initConnection();
 			User user = H.<User> request(User.class).eq("username", username)
 					.first();
 			if (!user.getPassword().equals(oldPswd)) {
@@ -189,7 +186,6 @@ public class User {
 				return Result.badRequest(true,
 						"No mail provided or wrong mail syntax!");
 			}
-			DatabaseHandler.initConnection();
 			User user = H.<User> request(User.class).eq("username", username)
 					.first();
 			user.setEmail(mail);
@@ -217,7 +213,6 @@ public class User {
 				return Result.noAuth(true, "No access for that user!");
 			}
 			String pswd = jObj.getString("password");
-			DatabaseHandler.initConnection();
 			User user = H.<User> request(User.class).eq("username", username)
 					.first();
 			if (!user.getPassword().equals(pswd)) {
@@ -309,7 +304,7 @@ public class User {
 					builder.append(',');
 				}
 			}
-			builder.append("], \"count\":\"" + charsT.size());
+			builder.append("], \"chars_count\":\"" + charsT.size());
 		}
 		List<User> friendsT = this.getFriends();
 		if (friendsT != null) {
@@ -322,13 +317,16 @@ public class User {
 					builder.append(',');
 				}
 			}
-			builder.append("], \"count\":\"" + friendsT.size());
+			builder.append("], \"friends_count\":\"" + friendsT.size());
 		}
 		if (email != null) {
 			builder.append("\",\"");
 			builder.append("email\":\"");
 			builder.append(email);
 		}
+		builder.append("\",\"");
+		builder.append("level\":\"");
+		builder.append(level);
 		builder.append("\"} ");
 		return builder.toString();
 	}
@@ -389,6 +387,14 @@ public class User {
 		this.email = email;
 	}
 	
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
 	public List<Token> getTokens() {
 		return tokens;
 	}

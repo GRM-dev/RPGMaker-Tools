@@ -1,7 +1,7 @@
 /**
  * 
  */
-package pl.grmdev.rpgmaker.multi.server.database;
+package pl.grmdev.rpgmaker.multi.server.rest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.*;
@@ -77,7 +77,7 @@ public class Result {
 	/**
 	 * @param error
 	 * @param msg
-	 * @param payload
+	 * @param params
 	 * @return
 	 */
 	public static Response badRequest(boolean error, String msg, String... params) {

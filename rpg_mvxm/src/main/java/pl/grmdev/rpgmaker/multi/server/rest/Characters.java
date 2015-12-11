@@ -10,8 +10,6 @@ import javax.ws.rs.core.*;
 
 import com.github.fluent.hibernate.H;
 
-import pl.grmdev.rpgmaker.multi.server.database.*;
-
 /**
  * @author Levvy055
  *
@@ -22,7 +20,6 @@ public class Characters {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAll() {
-		DatabaseHandler.initConnection();
 		List<Character> playerList = H.<Character> request(Character.class).list();
 		StringBuilder sb = new StringBuilder();
 		sb.append("[");
