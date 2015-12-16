@@ -4,30 +4,11 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.persistence.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import org.json.JSONObject;
 
@@ -95,6 +76,7 @@ public class Character {
 			if (!Token.verify(token, user.getId())) {
 				return Result.noAuth(true, "wrong token");
 			}
+			user.setLastActive(new Date());
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
 			Character character = mapper.readValue(json.getJSONObject("character").toString(), Character.class);
@@ -126,36 +108,42 @@ public class Character {
 	@GET
 	@Path("/{char}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getChar(@PathParam("char") String charName, @QueryParam("authToken") String token) {
+	public Response getChar(@PathParam("char") String charName, @QueryParam("username")String username,@QueryParam("authToken") String token) {
 		if (token == null || token.isEmpty()) {
 			return Result.noAuth(true, "No token!");
 		}
 		if (charName == null || charName.isEmpty()) {
 			return Result.badRequest(true, "Received no character name!");
 		}
-		Token tokObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
-		if (tokObj == null) {
-			return Result.noAuth(true, "Wrong token");
+		 
+		if (!Token.verify(token, username)) {
+			return Result.noAuth(true, "Wrong token for specified username or token expired!");
 		}
 		Character character = H.<Character> request(getClass()).eq("name", charName).first();
 		if (character == null) {
 			return Result.notFound(true, "Character " + charName + " not exist!");
 		}
+		User user = H.<User> request(User.class).eq("username", username).first();
+		user.setLastActive(new Date());
 		return Result.json(character.toString());
 	}
 	
 	@GET
 	@Path("/id/{char}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCharById(@PathParam("char") int charId, @QueryParam("authToken") String token) {
+	public Response getCharById(@PathParam("char") int charId, @QueryParam("username") String username,
+			@QueryParam("authToken") String token) {
 		if (charId == 0) {
-			return Result.badRequest(true, "Received no character id or id = 0!");
+			return Result.badRequest(true, "Received no character_id or id = 0!");
 		}
 		Character character = H.<Character> getById(Character.class, charId);
-		if (token == null || token.isEmpty()) {
-			return Result.noAuth(false, character.getName());
+		if (character == null) {
+			return Result.notFound(true, "Character with id: " + id + " not found");
 		}
-		return getChar(character.getName(), token);
+		if (token == null || token.isEmpty()) {
+			return Result.noAuth(false, username);
+		}
+		return getChar(character.getName(), username, token);
 	}
 	
 	@GET
@@ -189,18 +177,20 @@ public class Character {
 			if (token == null || token.isEmpty()) {
 				return Result.noAuth(true, "No token provided!");
 			}
-			Character character = H.<Character> request(Character.class).eq("name", charName).first();
-			if (character == null) {
+			List<Character> charList = H.<Character> request(Character.class).eq("name", charName).list();
+			if (charList == null) {
 				return Result.notFound(true, "Character " + charName + " not found!");
 			}
-			if (!Token.verify(token, character.getId())) {
+			Character c = charList.get(0);
+			if (!Token.verify(token, c.getId())) {
 				return Result.noAuth(true, "Wrong token!");
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));
 			Character charNew = mapper.readValue(json.getJSONObject("character").toString(), Character.class);
-			character.updateFrom(charNew);
-			H.saveOrUpdate(character);
+			c.updateFrom(charNew);
+			c.getUser().setLastActive(new Date());
+			H.saveOrUpdate(c);
 			return Result.success("updated!");
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -4,9 +4,9 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.*;
 
+import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 /**
@@ -20,6 +20,7 @@ public class Result {
 	private String msg;
 	private boolean json;
 	private JSONObject jsonObject;
+	private static Logger logger = Logger.getLogger("sql");
 	
 	/**
 	 * @param success
@@ -39,6 +40,13 @@ public class Result {
 	}
 	
 	public static Response json(String json) {
+		StackTraceElement[] stackTrace = new Exception().getStackTrace();
+		StackTraceElement stackTraceElement = stackTrace[1];
+		String callerClassName = stackTraceElement.getClassName();
+		String methodName = stackTraceElement.getMethodName();
+		int lineNumber = stackTraceElement.getLineNumber();
+		logger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
+				+ ",\"obj\": " + json + "}");
 		return Response.ok(json).build();
 	}
 	
@@ -111,10 +119,12 @@ public class Result {
 	private static ResponseBuilder getStatusResponse(boolean error, String obj, Status status) {
 		ResponseBuilder respB = Response.status(status);
 		if (error) {
-			respB = respB.entity(new Result(false, true, obj).asJson());
+			respB = respB.entity(new Result(false, true, obj).toString());
 		} else if (obj != null) {
 			respB = respB.entity(obj);
 		}
+		logger.info("{\"error\": " + error + ", \"obj\": " + (obj == null ? "null" : "\"" + obj + "\"")
+				+ ", \"status\": \"" + status.toString() + "\"");
 		return respB;
 	}
 
@@ -130,7 +140,18 @@ public class Result {
 	 * @return Result object in JSON format
 	 */
 	public String asJson() {
-		return toString();
+		String r = toString();
+		StackTraceElement[] stackTrace = new Exception().getStackTrace();
+		StackTraceElement stackTraceElement = stackTrace[1];
+		if (stackTraceElement.getClassName().equals(this.getClass().getName())) {
+			stackTraceElement = stackTrace[2];
+		}
+		String callerClassName = stackTraceElement.getClassName();
+		String methodName = stackTraceElement.getMethodName();
+		int lineNumber = stackTraceElement.getLineNumber();
+		logger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
+				+ ",\"obj\": " + r + "}");
+		return r;
 	}
 	
 	@Override

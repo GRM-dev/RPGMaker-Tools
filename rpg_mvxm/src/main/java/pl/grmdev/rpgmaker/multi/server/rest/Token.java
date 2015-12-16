@@ -3,32 +3,12 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 
 import org.json.JSONObject;
 
@@ -76,6 +56,8 @@ public class Token {
 			if (user == null) {
 				return Result.badRequest(true, "Wrong credentials!");
 			}
+			user.setLastActive(new Date());
+			H.saveOrUpdate(user);
 			char[] token = null;
 			boolean exists = true;
 			int attempts = 0;
@@ -92,16 +74,6 @@ public class Token {
 					}
 				}
 				exists = tokenTemp != null;
-				if (tokenTemp != null) {
-					System.out.println(new String(tokenTemp.getToken()));
-					System.out.println(tokenTemp.getId() + " | " + attempts);
-				} else
-					System.out.println("null tt");
-				if (token == null)
-					System.out.println("t null");
-				else
-					System.out.println(new String(token));
-					
 				if (attempts > 6) {
 					return Result.exception(new Exception(
 							"There was problem with token generator."));
@@ -186,16 +158,38 @@ public class Token {
 	/**
 	 * @param token
 	 *            Token object to verify
-	 * @param id
+	 * @param username
+	 *            username
+	 * @return true if token is valid
+	 */
+	public static boolean verify(String token, String username) {
+		if (token != null && !token.isEmpty()) {
+			List<Token> tokenList = H.<Token> request(Token.class).fetchJoin("user").eq("token", token.toCharArray())
+					.list();
+			if (tokenList != null && tokenList.size() > 0) {
+				Token tokenObj = tokenList.get(0);
+				if (tokenObj != null && tokenObj.getUser().getUsername().equals(username)
+						&& tokenObj.getExpirationTime().after(new Date())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * @param token
+	 *            Token object to verify
+	 * @param userId
 	 *            user_id
 	 * @return true if token is valid
 	 */
-	public static boolean verify(String token, int id) {
+	public static boolean verify(String token, int userId) {
 		if (token != null && !token.isEmpty()) {
 			List<Token> tokenList = H.<Token> request(Token.class).fetchJoin("user").eq("token", token.toCharArray()).list();
 			if (tokenList != null && tokenList.size() > 0) {
 				Token tokenObj = tokenList.get(0);
-				if (tokenObj != null && tokenObj.getUser().getId() == id
+				if (tokenObj != null && tokenObj.getUser().getId() == userId
 						&& tokenObj.getExpirationTime().after(new Date())) {
 					return true;
 				}

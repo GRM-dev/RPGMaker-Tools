@@ -86,6 +86,7 @@ public class User {
 			}
 			user.setUsername(user.getUsername().toLowerCase());
 			user.setRegisterDate(new Date());
+			user.setLastActive(new Date());
 			User user2 = H.save(user);
 			if (user.equals(user2)) {
 				return Result.created(false, "User created successfully");
@@ -113,6 +114,7 @@ public class User {
 			String res;
 			if (token != null && !token.isEmpty() && Token.verify(token, user.getId())) {
 				res = user.toString();
+				user.setLastActive(new Date());
 			} else {
 				res = "{\"id\": " + user.getId() + ", \"name\": \""
 						+ user.getUsername() + "\"}";
@@ -145,6 +147,9 @@ public class User {
 			String newPswd = jObj.getString("newPassword");
 			User user = H.<User> request(User.class).eq("username", username)
 					.first();
+			if (user == null) {
+				return Result.notFound(true, "User '" + username + "' not found");
+			}
 			if (!user.getPassword().equals(oldPswd)) {
 				return Result.noAuth(true, "Wrong credentials!");
 			}
@@ -153,6 +158,7 @@ public class User {
 						"Wrong Password! It should be longer than 3 letters.");
 			}
 			user.setPassword(newPswd);
+			user.setLastActive(new Date());
 			H.saveOrUpdate(user);
 			return Result.success("Password updated");
 		} catch (Exception e) {
@@ -188,6 +194,10 @@ public class User {
 			}
 			User user = H.<User> request(User.class).eq("username", username)
 					.first();
+			if (user == null) {
+				return Result.notFound(true, "User '" + username + "' not found");
+			}
+			user.setLastActive(new Date());
 			user.setEmail(mail);
 			H.saveOrUpdate(user);
 			return Result.success("Mail updated");
