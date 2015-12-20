@@ -68,7 +68,7 @@ namespace Rpg
                 output = Properties.Settings.Default.LastInput;
             var args = new List<string>()
             {
-                "/nologo",
+                /*"/nologo",*/
                 $"/out:\"{output}\"",
                 $"\"{filename}.il\"",
             };
@@ -88,11 +88,13 @@ namespace Rpg
                     args.Add("/pe64");
                     break;
             }
+            var argsJ = string.Join(" ", args.ToArray());
+            Console.WriteLine(Properties.Settings.Default.IlasmPath+" | "+argsJ);
             // Create Process 
             var info = new ProcessStartInfo
             {
                 FileName = Properties.Settings.Default.IlasmPath,
-                Arguments = string.Join(" ", args.ToArray()),
+                Arguments = argsJ,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
@@ -298,7 +300,7 @@ namespace Rpg
                 domain.SetData("FilePath", filepath);
                 domain.DoCallBack(new CrossAppDomainDelegate(Load));
                 _dic = (Dictionary<string, Dictionary<string, KeyValuePair<string, string>>>)domain.GetData("dic");
-                int exportscount = (int)domain.GetData("ExportCount");
+                var exportscount = (int)domain.GetData("ExportCount");
                 AppDomain.Unload(domain);
                 // Return if no exported methods were found
                 Console.Out.WriteLine(_dic);

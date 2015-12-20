@@ -8,13 +8,14 @@ namespace RpgMulti.Server
 {
     public class UriSegment
     {
-        private readonly string _uri;
-
         private UriSegment(string uri)
         {
-            _uri = uri;
+            Uri = uri;
         }
 
         public static UriSegment UsersGetAll { get; }=new UriSegment("api/users");
+        public static UriSegment UserGet { get; }=new UriSegment("api/user/{username}");
+
+        public string Uri { get; private set; }
     }
 }

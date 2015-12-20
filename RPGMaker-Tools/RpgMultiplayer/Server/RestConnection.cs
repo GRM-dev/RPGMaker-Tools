@@ -10,7 +10,7 @@ namespace RpgMulti.Server
     public class RestConnection
     {
         private static RestConnection _restC;
-        private RestClient _client;
+        private readonly RestClient _client;
 
         private RestConnection()
         {
@@ -18,27 +18,37 @@ namespace RpgMulti.Server
             _client = new RestClient(Properties[Property.Url.Name] + ":" + Properties[Property.Port.Name]);
         }
 
-        public RestRequest Get(string uri)
+        public IRestResponse Execute(RestRequest request)
         {
-            var request = new RestRequest(uri, Method.GET);
+            return _client.Execute(request);
+        }
+
+        public IRestResponse<T> Execute<T>(RestRequest request) where T : new()
+        {
+            return _client.Execute<T>(request);
+        }
+
+        public RestRequest Get(UriSegment uri)
+        {
+            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.GET);
             return request;
         }
 
-        public RestRequest Post(string uri)
+        public RestRequest Post(UriSegment uri)
         {
-            var request = new RestRequest(uri, Method.POST);
+            var request = new RestRequest(uri.Uri, Method.POST);
             return request;
         }
 
-        public RestRequest Put(string uri)
+        public RestRequest Put(UriSegment uri)
         {
-            var request = new RestRequest(uri, Method.PUT);
+            var request = new RestRequest(uri.Uri, Method.PUT);
             return request;
         }
 
-        public RestRequest Delete(string uri)
+        public RestRequest Delete(UriSegment uri)
         {
-            var request = new RestRequest(uri, Method.DELETE);
+            var request = new RestRequest(uri.Uri, Method.DELETE);
             return request;
         }
 
@@ -47,10 +57,6 @@ namespace RpgMulti.Server
             LibFileUtil.ChangeValue(property.Name, newValue);
         }
         private Dictionary<string, string> Properties { get; set; }
-        public static RestConnection Instance
-        {
-            get { return _restC ?? (_restC = new RestConnection()); }
-            set { _restC = value; }
-        }
+        public static RestConnection Instance => _restC ?? (_restC = new RestConnection());
     }
 }

@@ -4,11 +4,30 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
-import javax.persistence.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
 
@@ -71,10 +90,10 @@ public class Character {
 			username = username.toLowerCase();
 			User user = H.<User> request(User.class).eq("username", username).first();
 			if (user == null) {
-				return Result.notFound(true, "User " + username + "not found");
+ return Result.notFound(false, true, "User " + username + "not found");
 			}
 			if (!Token.verify(token, user.getId())) {
-				return Result.noAuth(true, "wrong token");
+ return Result.noAuth(false, true, "wrong token");
 			}
 			user.setLastActive(new Date());
 			ObjectMapper mapper = new ObjectMapper();
@@ -110,18 +129,18 @@ public class Character {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getChar(@PathParam("char") String charName, @QueryParam("username")String username,@QueryParam("authToken") String token) {
 		if (token == null || token.isEmpty()) {
-			return Result.noAuth(true, "No token!");
+ return Result.noAuth(false, true, "No token!");
 		}
 		if (charName == null || charName.isEmpty()) {
 			return Result.badRequest(true, "Received no character name!");
 		}
 		 
 		if (!Token.verify(token, username)) {
-			return Result.noAuth(true, "Wrong token for specified username or token expired!");
+ return Result.noAuth(false, true, "Wrong token for specified username or token expired!");
 		}
 		Character character = H.<Character> request(getClass()).eq("name", charName).first();
 		if (character == null) {
-			return Result.notFound(true, "Character " + charName + " not exist!");
+ return Result.notFound(true, true, "Character " + charName + " not exist!");
 		}
 		User user = H.<User> request(User.class).eq("username", username).first();
 		user.setLastActive(new Date());
@@ -138,10 +157,10 @@ public class Character {
 		}
 		Character character = H.<Character> getById(Character.class, charId);
 		if (character == null) {
-			return Result.notFound(true, "Character with id: " + id + " not found");
+ return Result.notFound(true, true, "Character with id: " + id + " not found");
 		}
 		if (token == null || token.isEmpty()) {
-			return Result.noAuth(false, username);
+ return Result.noAuth(false, false, username);
 		}
 		return getChar(character.getName(), username, token);
 	}
@@ -155,7 +174,7 @@ public class Character {
 		}
 		Character character = H.<Character> getById(Character.class, charId);
 		if (character == null) {
-			return Result.notFound(false, "Player not exists with that id: " + charId);
+ return Result.notFound(false, false, "Player not exists with that id: " + charId);
 		}
 		return Result.json("{\"id\":" + charId + ",\"name\":\"" + character.getName() + "\"}");
 	}
@@ -175,15 +194,15 @@ public class Character {
 			JSONObject json = new JSONObject(body);
 			String token = json.getString("authToken");
 			if (token == null || token.isEmpty()) {
-				return Result.noAuth(true, "No token provided!");
+ return Result.noAuth(false, true, "No token provided!");
 			}
 			List<Character> charList = H.<Character> request(Character.class).eq("name", charName).list();
 			if (charList == null) {
-				return Result.notFound(true, "Character " + charName + " not found!");
+ return Result.notFound(false, true, "Character " + charName + " not found!");
 			}
 			Character c = charList.get(0);
 			if (!Token.verify(token, c.getId())) {
-				return Result.noAuth(true, "Wrong token!");
+ return Result.noAuth(false, true, "Wrong token!");
 			}
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS"));

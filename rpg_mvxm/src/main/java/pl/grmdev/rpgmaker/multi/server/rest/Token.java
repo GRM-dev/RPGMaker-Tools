@@ -3,12 +3,32 @@
  */
 package pl.grmdev.rpgmaker.multi.server.rest;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.json.JSONObject;
 
@@ -145,7 +165,7 @@ public class Token {
 		try {
 			Token tokenObj = H.<Token> request(Token.class).eq("token", token.toCharArray()).first();
 			if (tokenObj == null) {
-				return Result.notFound(true, "token not exists!");
+ return Result.notFound(false, true, "token not exists!");
 			}
 			return Result.success(tokenObj.getExpirationTime().toString());
 		} catch (Exception e) {

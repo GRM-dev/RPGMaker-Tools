@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Rpg;
+using Rpg.Properties;
 
 namespace ExporterCmd
 {
-    class Program
+    public class Program
     {
         private static void Main(string[] args)
         {
@@ -20,7 +22,13 @@ namespace ExporterCmd
                 {
                     try
                     {
-                        Rpg.Program.ExportFromDev(input, output);
+                        //Rpg.Program.ExportFromDev(input, output);
+                        Settings.Default.Architecture = 0;
+                        Settings.Default.LastOutput = output;
+                        Settings.Default.Save();
+
+                        Exporter.DataReceived += Exporter_DataReceived;
+                        Exporter.Build(input);
                         Console.WriteLine("Done!");
                     }
                     catch (Exception e)
@@ -31,14 +39,19 @@ namespace ExporterCmd
                 }
                 else
                 {
-                    Console.WriteLine("File \""+input +"\" doesn't exists!");
+                    Console.WriteLine("File \"" + input + "\" doesn't exists!");
                 }
             }
             else
             {
-                Console.WriteLine("Bad arguments amount! Should be 2 (was "+args.Length+")");
+                Console.WriteLine("Bad arguments amount! Should be 2 (was " + args.Length + ")");
             }
             Console.ReadKey();
+        }
+
+        private static void Exporter_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            Console.WriteLine((e.Data));
         }
     }
 }

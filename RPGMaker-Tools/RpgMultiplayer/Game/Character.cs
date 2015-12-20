@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rpg;
 
 namespace RpgMulti.Game
 {
-    class Character
+    public class Character
     {
+        [RpgExport("Char_Name")]
+        public static string GetName(int id)
+        {
+            return "not-implemented";
+        }
     }
 }

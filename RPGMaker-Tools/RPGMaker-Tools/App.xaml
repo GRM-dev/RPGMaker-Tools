@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Application x:Class="RPGMaker_Tools.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:RPGMaker_Tools" StartupUri="MainWindow.xaml">
+<Application xmlns:local="clr-namespace:RPGMaker_Tools" StartupUri="MainWindow.xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Class="RPGMaker_Tools.App" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
          
     <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="AppLocalDictionary.xaml"/>
+                <ResourceDictionary Source="AppLocalDictionary.xaml" />
                 <ResourceDictionary Source="/Resources/Icons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/teal.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
-                <ResourceDictionary Source="Themes\ExpressionDark.xaml" />
-            </ResourceDictionary.MergedDictionaries>
+                
+            <ResourceDictionary Source="Themes\ExpressionDark.xaml" /></ResourceDictionary.MergedDictionaries>
         </ResourceDictionary></Application.Resources>
 </Application>

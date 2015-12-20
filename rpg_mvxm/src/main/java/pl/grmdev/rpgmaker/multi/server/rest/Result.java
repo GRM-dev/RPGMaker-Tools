@@ -4,7 +4,8 @@
 package pl.grmdev.rpgmaker.multi.server.rest;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.*;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -57,12 +58,12 @@ public class Result {
 		return Response.ok(new Result(true, false, info).asJson()).build();
 	}
 	
-	public static Response noAuth(boolean error, String obj) {
-		return getStatusResponse(error, obj, Status.UNAUTHORIZED).build();
+	public static Response noAuth(boolean success, boolean error, String obj) {
+		return getStatusResponse(success, error, obj, Status.UNAUTHORIZED).build();
 	}
 
-	public static Response notFound(boolean error, String obj) {
-		return getStatusResponse(error, obj, Status.NOT_FOUND).build();
+	public static Response notFound(boolean success, boolean error, String obj) {
+		return getStatusResponse(success, error, obj, Status.NOT_FOUND).build();
 	}
 	
 	/**
@@ -112,19 +113,15 @@ public class Result {
 			}
 			msg = msg.substring(0, msg.length() - 1) + "]}";
 		}
-			ResponseBuilder respBuilder = getStatusResponse(error, msg, Status.BAD_REQUEST);
+		ResponseBuilder respBuilder = getStatusResponse(false, error, msg, Status.BAD_REQUEST);
 		return respBuilder.build();
 	}
 
-	private static ResponseBuilder getStatusResponse(boolean error, String obj, Status status) {
+	private static ResponseBuilder getStatusResponse(boolean success, boolean error, String obj, Status status) {
 		ResponseBuilder respB = Response.status(status);
-		if (error) {
-			respB = respB.entity(new Result(false, true, obj).toString());
-		} else if (obj != null) {
-			respB = respB.entity(obj);
-		}
-		logger.info("{\"error\": " + error + ", \"obj\": " + (obj == null ? "null" : "\"" + obj + "\"")
-				+ ", \"status\": \"" + status.toString() + "\"");
+		respB = respB.entity(new Result(success, error, obj).toString());
+		logger.info(
+				"{\"success\": " + success + ",\"error\": " + error + ", \"obj\": " + (obj == null ? "null" : "\"" + obj + "\"") + ", \"status\": \"" + status.toString() + "\"");
 		return respB;
 	}
 
