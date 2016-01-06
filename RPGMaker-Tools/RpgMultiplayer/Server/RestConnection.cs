@@ -36,19 +36,19 @@ namespace RpgMulti.Server
 
         public RestRequest Post(UriSegment uri)
         {
-            var request = new RestRequest(uri.Uri, Method.POST);
+            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.POST);
             return request;
         }
 
         public RestRequest Put(UriSegment uri)
         {
-            var request = new RestRequest(uri.Uri, Method.PUT);
+            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.PUT);
             return request;
         }
 
         public RestRequest Delete(UriSegment uri)
         {
-            var request = new RestRequest(uri.Uri, Method.DELETE);
+            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.DELETE);
             return request;
         }
 

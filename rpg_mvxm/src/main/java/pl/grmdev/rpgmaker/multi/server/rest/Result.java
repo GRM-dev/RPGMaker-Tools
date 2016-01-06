@@ -161,7 +161,7 @@ public class Result {
 		if (msg != null) {
 			builder.append(",\"");
 			if (error) {
-				builder.append("errorMsg\":\"");
+				builder.append("error_msg\":\"");
 			} else {
 				builder.append("message\":\"");
 			}

@@ -53,12 +53,12 @@ repositories {
 dependencies {
 	compile group: 'log4j', name: 'log4j', version: '1.2.17'
 	compile group: 'mysql',name: 'mysql-connector-java', version: '5.1.37'
-	compile group: 'org.hibernate', name: 'hibernate-core', version: '5.0.5.Final'
+	compile group: 'org.hibernate', name: 'hibernate-core', version: '5.0.6.Final'
 	compile group: 'com.github.v-ladynev', name: 'fluent-hibernate-core', version: '0.1.4'
 	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.22.1'
-	compile group: 'com.google.guava', name: 'guava', version: '18.0'
+	compile group: 'com.google.guava', name: 'guava', version: '19.0'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
-	compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-json-org', version: '2.6.3'
+	compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-json-org', version: '2.6.4'
 	compile 'log4j:apache-log4j-extras:1.2.17'
 	def tomcatVersion = '7.0.52'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
@@ -69,7 +69,7 @@ dependencies {
 	compile "org.apache.tomcat:tomcat-jdbc:${tomcatVersion}"
 	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 	runtime 'javax.servlet:jstl:1.2'
-	jdbcdriver 'mysql:mysql-connector-java:5.1.37'
+	jdbcdriver 'mysql:mysql-connector-java:5.1.38'
 	testCompile 'junit:junit:4.12'
 	testCompile 'org.assertj:assertj-core:3.2.0'
 }

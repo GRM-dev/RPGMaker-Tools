@@ -18,7 +18,7 @@ public class DatabaseTest {
 	@Test
 	public void initConnectionTest() {
 		try {
-			;// DatabaseHandler.initConnection();
+			System.out.println("_");// DatabaseHandler.initConnection();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
