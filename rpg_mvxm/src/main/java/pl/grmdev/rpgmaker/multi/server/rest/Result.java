@@ -67,25 +67,25 @@ public class Result {
 	}
 	
 	/**
-	 * @param warning
+	 * @param error
 	 *            true if there was warning during execution
 	 * @param msg
 	 *            message to send
 	 * @return {@link Response}
 	 */
-	public static Response created(boolean warning, String msg) {
-		return Response.status(Status.CREATED).entity(new Result(true, warning, msg).asJson()).build();
+	public static Response created(boolean error, String msg) {
+		return Response.status(Status.CREATED).entity(new Result(true, error, msg).asJson()).build();
 	}
 	
 	/**
-	 * @param warning
+	 * @param error
 	 *            true if there was warning during execution
 	 * @param jObj
 	 *            iinner json object
 	 * @return {@link Response}
 	 */
-	public static Response created(boolean warning, JSONObject jObj) {
-		return Response.status(Status.CREATED).entity(new Result(true, warning, jObj).asJson()).build();
+	public static Response created(boolean error, JSONObject jObj) {
+		return Response.status(Status.CREATED).entity(new Result(true, error, jObj).asJson()).build();
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class Result {
 		builder.append(success);
 		builder.append(",\"error\": ");
 		builder.append(error);
-		if (msg != null) {
+		if (msg != null && !msg.isEmpty()) {
 			builder.append(",\"");
 			if (error) {
 				builder.append("error_msg\":\"");
@@ -166,13 +166,16 @@ public class Result {
 				builder.append("message\":\"");
 			}
 			builder.append(msg.replace("\"", "'"));
+			builder.append("\"");
 		}
 		if (json) {
-			builder.append(", \"body\":{");
+			builder.append(", \"response\":");
 			builder.append(jsonObject.toString());
 			builder.append("}");
 		}
-		builder.append("\"} ");
+		else {
+			builder.append("\"} ");
+		}
 		return builder.toString();
 	}
 }

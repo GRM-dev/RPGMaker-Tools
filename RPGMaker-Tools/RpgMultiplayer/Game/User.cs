@@ -59,7 +59,7 @@ namespace RpgMulti.Game
             try
             {
                 var r = RestConnection.Instance;
-                var request = r.Post(UriSegment.UserAdd);
+                var request = r.Post(UriSegment.UserRegPost);
                 request.AddUrlSegment("username", username);
                 request.RequestFormat = DataFormat.Json;
                 var jsonReq = new JsonObject

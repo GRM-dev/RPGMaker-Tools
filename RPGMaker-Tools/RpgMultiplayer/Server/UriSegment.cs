@@ -15,7 +15,8 @@ namespace RpgMulti.Server
 
         public static UriSegment UsersGetAll { get; }=new UriSegment("api/users");
         public static UriSegment UserGet { get; }=new UriSegment("api/user/{username}");
-        public static UriSegment UserAdd { get; }=new UriSegment("api/user/{username}");
+        public static UriSegment UserRegPost { get; }=new UriSegment("api/user/{username}");
+        public static UriSegment TokenGetPost { get; }=new UriSegment("api/token");
 
         public string Uri { get; private set; }
     }

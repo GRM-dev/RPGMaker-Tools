@@ -57,6 +57,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game\Character.cs" />
+    <Compile Include="Game\Token.cs" />
+    <Compile Include="LibCore.cs" />
     <Compile Include="Server\Property.cs" />
     <Compile Include="Server\Result.cs" />
     <Compile Include="Server\UriSegment.cs" />

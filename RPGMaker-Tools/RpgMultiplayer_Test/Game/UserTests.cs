@@ -3,10 +3,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using RpgMulti.Game;
 
-namespace RpgMultiTest
+namespace RpgMulti.Game.Tests
 {
     [TestClass]
-    public class UserTest
+    public class UserTests
     {
         [TestMethod]
         public void TestExists()
