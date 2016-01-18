@@ -139,10 +139,11 @@ public class User {
 	}
 	
 	@PUT
-	@Path("/pswd/{user}")
+	@Path("/pswd/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changePassword(@PathParam("user") String username,
+	public Response changePassword(@PathParam("username")
+	String username,
 			String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
@@ -179,10 +180,10 @@ public class User {
 	}
 	
 	@PUT
-	@Path("/mail/{user}")
+	@Path("/mail/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response changeEmail(@PathParam("user")
+	public Response changeEmail(@PathParam("username")
 	String username, String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
@@ -207,10 +208,11 @@ public class User {
 	}
 	
 	@DELETE
-	@Path("/{user}")
+	@Path("/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response delete(@PathParam("user") String username, String payload) {
+	public Response delete(@PathParam("username")
+	String username, String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
 			String token = jObj.getString("authToken");

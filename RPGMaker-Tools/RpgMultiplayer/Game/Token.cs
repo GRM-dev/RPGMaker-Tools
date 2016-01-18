@@ -46,6 +46,8 @@ namespace RpgMulti.Game
                     var token = (string)resp["token"];
                     if (token != null && token.Length > 100)
                     {
+                        r.ChangeProperty(Property.Username, username);
+                        r.ChangeProperty(Property.Token, token);
                         return Result.AsJson(true, false, $"User '{username}' token generated", token);
                     }
                     else
@@ -70,6 +72,13 @@ namespace RpgMulti.Game
                 Console.WriteLine(e.Message);
                 return Result.Exception(e);
             }
+        }
+
+        [RpgExport("Token_Valid")]
+        public static string IsValid()
+        {
+
+            return null;
         }
     }
 }

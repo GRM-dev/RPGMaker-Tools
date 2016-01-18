@@ -23,7 +23,7 @@ namespace RpgMulti
                 }
                 else
                 {
-                    throw new IOException("Cannot got properties from file!");
+                    throw new IOException("Cannot got properties from config file!");
                 }
             }
             catch (Exception e)

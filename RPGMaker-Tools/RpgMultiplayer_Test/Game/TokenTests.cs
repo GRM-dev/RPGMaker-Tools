@@ -14,8 +14,16 @@ namespace RpgMulti.Game.Tests
         [TestMethod()]
         public void GetTest()
         {
-            var resp=Token.Get("aae", "AAAAF");
+            var resp = Token.Get("aae", "AAAAF");
             Assert.IsNotNull(resp);
+
+        }
+
+        [TestMethod()]
+        public void IsValidTest()
+        {
+
+            var resp = Token.IsValid();
         }
     }
 }

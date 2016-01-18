@@ -30,26 +30,31 @@ namespace RpgMulti.Server
 
         public RestRequest Get(UriSegment uri)
         {
-            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.GET);
+            var request = new RestRequest(GetBase() + uri.Uri, Method.GET);
             return request;
         }
 
-        public RestRequest Post(UriSegment uri)
+       public RestRequest Post(UriSegment uri)
         {
-            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.POST);
+            var request = new RestRequest(GetBase() + uri.Uri, Method.POST);
             return request;
         }
 
         public RestRequest Put(UriSegment uri)
         {
-            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.PUT);
+            var request = new RestRequest(GetBase() + uri.Uri, Method.PUT);
             return request;
         }
 
         public RestRequest Delete(UriSegment uri)
         {
-            var request = new RestRequest(Properties["APP"] + "/" + uri.Uri, Method.DELETE);
+            var request = new RestRequest(GetBase() + uri.Uri, Method.DELETE);
             return request;
+        }
+
+        private string GetBase()
+        {
+            return Properties[Property.AppName.Name] + "/";
         }
 
         public void ChangeProperty(Property property, string newValue)
