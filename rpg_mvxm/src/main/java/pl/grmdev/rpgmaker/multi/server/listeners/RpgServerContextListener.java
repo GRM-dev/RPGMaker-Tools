@@ -6,10 +6,12 @@ package pl.grmdev.rpgmaker.multi.server.listeners;
 import static pl.grmdev.rpgmaker.utils.CLogger.closeLoggers;
 import static pl.grmdev.rpgmaker.utils.CLogger.info;
 import static pl.grmdev.rpgmaker.utils.CLogger.initLogger;
+import static pl.grmdev.rpgmaker.utils.CLogger.warn;
 
-import javax.servlet.*;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
-import com.github.fluent.hibernate.factory.HibernateSessionFactory;
+import com.mysql.jdbc.AbandonedConnectionCleanupThread;
 
 import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
 
@@ -36,9 +38,15 @@ public class RpgServerContextListener implements ServletContextListener {
 	 */
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		HibernateSessionFactory.closeSessionFactory();
 		info("RPG Server App closing ...");
+		DatabaseHandler.closeConnection();
+		try {
+			AbandonedConnectionCleanupThread.shutdown();
+		}
+		catch (InterruptedException e) {
+			warn("SEVERE problem cleaning up: " + e.getMessage());
+			e.printStackTrace();
+		}
 		closeLoggers();
 	}
-	
 }

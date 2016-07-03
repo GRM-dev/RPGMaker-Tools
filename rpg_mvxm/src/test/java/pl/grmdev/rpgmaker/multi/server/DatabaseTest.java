@@ -7,7 +7,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.github.fluent.hibernate.factory.HibernateSessionFactory;
+import pl.grmdev.rpgmaker.multi.server.database.DatabaseHandler;
 
 /**
  * @author Levvy055
@@ -18,18 +18,19 @@ public class DatabaseTest {
 	@Test
 	public void initConnectionTest() {
 		try {
-			System.out.println("_");// DatabaseHandler.initConnection();
+			System.out.println("_");
+			DatabaseHandler.initConnection();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			fail("Ecxeption: " + e.getMessage());
+			// fail("Ecxeption: " + e);
 		}
 	}
 	
 	@Test
 	public void closeConnectionTest() {
 		try {
-			HibernateSessionFactory.closeSessionFactory();
+			DatabaseHandler.closeConnection();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

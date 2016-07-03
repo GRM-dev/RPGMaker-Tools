@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error">
+  <Appenders>
+    <JDBC name="databaseAppender" tableName="logging_events">
+      <DataSource jndiName="java:/comp/env/jdbc/rpg_mvxm_logs" />
+      <Column name="level" pattern="%level" />
+      <Column name="logger" pattern="%logger" />
+      <Column name="event_date" isEventTimestamp="true" />
+      <Column name="message" pattern="%message" />
+      <Column name="exception" pattern="%ex{full}" />
+    </JDBC>
+  </Appenders>
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="databaseAppender"/>
+    </Root>
+  </Loggers>
+</Configuration>

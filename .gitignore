@@ -224,3 +224,5 @@ rpg_mvxm/gradle-app.setting
 rpg_mvxm/src/main/webapp/META-INF/context.xml
 *.idea/
 *.iml
+
+ui/

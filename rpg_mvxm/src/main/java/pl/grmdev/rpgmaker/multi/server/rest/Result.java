@@ -7,8 +7,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.log4j.Logger;
 import org.json.JSONObject;
+
+import pl.grmdev.rpgmaker.utils.CLogger;
 
 /**
  * @author Levvy055
@@ -21,7 +22,6 @@ public class Result {
 	private String msg;
 	private boolean json;
 	private JSONObject jsonObject;
-	private static Logger logger = Logger.getLogger("sql");
 	
 	/**
 	 * @param success
@@ -46,7 +46,7 @@ public class Result {
 		String callerClassName = stackTraceElement.getClassName();
 		String methodName = stackTraceElement.getMethodName();
 		int lineNumber = stackTraceElement.getLineNumber();
-		logger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
+		CLogger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
 				+ ",\"obj\": " + json + "}");
 		return Response.ok(json).build();
 	}
@@ -120,7 +120,7 @@ public class Result {
 	private static ResponseBuilder getStatusResponse(boolean success, boolean error, String obj, Status status) {
 		ResponseBuilder respB = Response.status(status);
 		respB = respB.entity(new Result(success, error, obj).toString());
-		logger.info(
+		CLogger.info(
 				"{\"success\": " + success + ",\"error\": " + error + ", \"obj\": " + (obj == null ? "null" : "\"" + obj + "\"") + ", \"status\": \"" + status.toString() + "\"");
 		return respB;
 	}
@@ -146,7 +146,7 @@ public class Result {
 		String callerClassName = stackTraceElement.getClassName();
 		String methodName = stackTraceElement.getMethodName();
 		int lineNumber = stackTraceElement.getLineNumber();
-		logger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
+		CLogger.info("{\"class\": \"" + callerClassName + "\",\"method\": \"" + methodName + "\",\"line\": " + lineNumber
 				+ ",\"obj\": " + r + "}");
 		return r;
 	}

@@ -26,8 +26,8 @@ repositories {
 
 dependencies {
     compile group: 'org.ini4j', name: 'ini4j', version: '0.5.4'
-    compile 'com.google.guava:guava:18.0'
-    compile 'org.zeroturnaround:zt-zip:1.8'
+    compile 'com.google.guava:guava:19.0'
+    compile 'org.zeroturnaround:zt-zip:1.9'
     testCompile 'junit:junit:4.12'
 }
 

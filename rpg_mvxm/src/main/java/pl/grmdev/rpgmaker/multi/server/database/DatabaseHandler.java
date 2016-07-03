@@ -3,7 +3,7 @@
  */
 package pl.grmdev.rpgmaker.multi.server.database;
 
-import com.github.fluent.hibernate.factory.HibernateSessionFactory;
+import com.github.fluent.hibernate.cfg.Fluent;
 
 import pl.grmdev.rpgmaker.multi.server.rest.Actor;
 import pl.grmdev.rpgmaker.multi.server.rest.Character;
@@ -38,11 +38,14 @@ public final class DatabaseHandler {
         if (configured) {
             return;
         }
-		HibernateSessionFactory.Builder.configureFromDefaultHibernateCfgXml()
-				.annotatedClasses(User.class, Token.class, Character.class, Position.class, Variables.class,
-						Switches.class, Inventory.class, Actor.class, Armor.class, Item.class, Weapon.class)
-				.createSessionFactory();
+		@SuppressWarnings("rawtypes")
+		Class[] classes = new Class[]{User.class, Token.class, Character.class, Position.class, Variables.class, Switches.class, Inventory.class, Actor.class, Armor.class, Item.class, Weapon.class};
+		Fluent.factory().annotatedClasses(classes).build();
         configured = true;
     }
 
+	public static void closeConnection() {
+		Fluent.factory().close();
+	}
+	
 }

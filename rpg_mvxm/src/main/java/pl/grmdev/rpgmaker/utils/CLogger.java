@@ -14,11 +14,13 @@ import java.util.logging.SimpleFormatter;
 
 import javax.ws.rs.Path;
 
+import org.apache.logging.log4j.core.LoggerContext;
+
 @Path("logs")
 public class CLogger {
 
 	private static Logger fileLogger;
-	private static org.apache.log4j.Logger dbLogger;
+	private static org.apache.logging.log4j.Logger dbLogger;
 	private static String logFileName = "info.log";
 	private static String locPath = "logs\\";
 
@@ -39,16 +41,27 @@ public class CLogger {
 			e.printStackTrace();
 		}
 		fileLogger.addHandler(fHandler);
-		dbLogger = org.apache.log4j.Logger.getLogger("sql");
+		dbLogger = LoggerContext.getContext(true).getLogger("sql");
 	}
 
 	public static void info(String msg) {
-		if (fileLogger != null)
+		if (fileLogger != null) {
 			fileLogger.info(msg);
-		if (dbLogger != null)
+		}
+		if (dbLogger != null) {
 			dbLogger.info(msg);
+		}
 	}
 
+	public static void warn(String msg) {
+		if (fileLogger != null) {
+			fileLogger.log(Level.WARNING, msg);
+		}
+		if (dbLogger != null) {
+			dbLogger.warn(msg);
+		}
+	}
+	
 	public static void log(Level level, String msg, Throwable thrown) {
 		if (fileLogger != null) fileLogger.log(level, msg, thrown);
 		if (dbLogger != null) {

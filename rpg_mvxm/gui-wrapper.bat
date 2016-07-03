@@ -41,4 +41,4 @@ echo       `@`
 echo                                 
 echo 
 @echo on
-gradle -gui
+gradlew.bat --gui

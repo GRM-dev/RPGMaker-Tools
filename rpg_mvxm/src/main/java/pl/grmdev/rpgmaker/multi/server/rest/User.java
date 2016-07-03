@@ -102,7 +102,7 @@ public class User {
 			}
 			else {
 				return Result.created(true, "User propably created because some problems occured during request execution.");
-		}
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
