@@ -49,7 +49,12 @@ public class CLogger {
 			fileLogger.info(msg);
 		}
 		if (dbLogger != null) {
-			dbLogger.info(msg);
+			try {
+				dbLogger.info(msg);
+			}
+			catch (Exception ex) {
+				fileLogger.log(Level.SEVERE, ex.toString());
+			}
 		}
 	}
 
@@ -58,13 +63,21 @@ public class CLogger {
 			fileLogger.log(Level.WARNING, msg);
 		}
 		if (dbLogger != null) {
-			dbLogger.warn(msg);
+			try {
+				dbLogger.warn(msg);
+			}
+			catch (Exception ex) {
+				fileLogger.log(Level.SEVERE, ex.toString());
+			}
 		}
 	}
 	
 	public static void log(Level level, String msg, Throwable thrown) {
-		if (fileLogger != null) fileLogger.log(level, msg, thrown);
+		if (fileLogger != null) {
+			fileLogger.log(level, msg, thrown);
+		}
 		if (dbLogger != null) {
+			try {
 			if (level == Level.SEVERE) {
 				dbLogger.error(msg, thrown);
 			} else if (level == Level.WARNING) {
@@ -75,14 +88,18 @@ public class CLogger {
 				dbLogger.info("ULC: " + msg, thrown);
 			}
 		}
+			catch (Exception ex) {
+				fileLogger.log(Level.SEVERE, ex.toString());
+			}
+		}
 	}
 
 	public static void logException(Exception e) {
-		log(Level.SEVERE, e.getMessage(), e);
+		log(Level.SEVERE, e.toString(), e);
 	}
 
 	public static void setFileLogger(Logger logger) {
-		CLogger.fileLogger = logger;
+		fileLogger = logger;
 	}
 
 	public static void closeLoggers() {
