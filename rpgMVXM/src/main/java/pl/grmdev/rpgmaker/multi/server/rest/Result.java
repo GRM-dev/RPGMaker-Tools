@@ -165,7 +165,7 @@ public class Result {
 			} else {
 				builder.append("message\":\"");
 			}
-			builder.append(msg.replace("\"", "'"));
+			builder.append(msg.replaceAll("\"", "'"));
 			builder.append("\"");
 		}
 		if (json) {
@@ -174,7 +174,7 @@ public class Result {
 			builder.append("}");
 		}
 		else {
-			builder.append("\"} ");
+			builder.append(builder.charAt(builder.length() - 1) != '\"' ? "\"} " : "} ");
 		}
 		return builder.toString();
 	}
