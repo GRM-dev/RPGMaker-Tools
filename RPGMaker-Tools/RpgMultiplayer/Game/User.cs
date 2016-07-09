@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using Rpg;
+using RpgMulti.Exceptions;
 using RpgMulti.Server;
 
 namespace RpgMulti.Game
@@ -19,6 +20,10 @@ namespace RpgMulti.Game
                 var request = r.Get(UriSegment.UserGet);
                 request.AddUrlSegment("username", username);
                 var response = r.Execute(request);
+                if (response.ErrorMessage == "Unable to connect to the remote server")
+                {
+                    throw new NoConnectionException("Unable to connect to the server");
+                }
                 var content = response.Content;
                 if (string.IsNullOrEmpty(content))
                 {
@@ -26,22 +31,24 @@ namespace RpgMulti.Game
                     {
                         throw response.ErrorException;
                     }
-                    else
-                    {
-                        throw new Exception("Received empty response without error. That shouldn't happen!");
-                    }
+                    throw new ConnectionException("Received empty response without error. That shouldn't happen!");
                 }
-                var jobj = JObject.Parse(content);
+                JObject jobj;
+                try
+                {
+                    jobj = JObject.Parse(content);
+                }
+                catch (Exception e)
+                {
+                    throw new ServerException("Couldn't parse server response.", e);
+                }
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     if ((bool)jobj["success"])
                     {
                         return Result.AsJson(true, false, $"User: {username} not found", false);
                     }
-                    else
-                    {
-                        return Result.AsJson(false, true, $"Couldn't  determine if {username} exists");
-                    }
+                    return Result.AsJson(false, true, $"Couldn't  determine if {username} exists");
                 }
                 var id = (int)jobj["id"];
                 return id > 0 ? Result.AsJson(true, false, $"User: {username} exists", true) : Result.AsJson(false, false, "Something went wrong cause got id: " + id);

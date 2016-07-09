@@ -56,6 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\ConnectionException.cs" />
+    <Compile Include="Exceptions\ServerException.cs" />
+    <Compile Include="Exceptions\NoConnectionException.cs" />
     <Compile Include="Game\Character.cs" />
     <Compile Include="Game\Token.cs" />
     <Compile Include="LibCore.cs" />

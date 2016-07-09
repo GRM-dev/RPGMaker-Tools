@@ -21,10 +21,7 @@ namespace RpgMulti
                 {
                     return Result.AsJson(true, false, "done", p);
                 }
-                else
-                {
-                    throw new IOException("Cannot got properties from config file!");
-                }
+                throw new IOException("Cannot got properties from config file!");
             }
             catch (Exception e)
             {

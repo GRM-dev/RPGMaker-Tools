@@ -20,6 +20,7 @@ namespace RpgMulti.Game.Tests
             jo = JObject.Parse(existsResStr);
             success = (bool)jo["Success"];
             Assert.IsTrue(success);
+            Assert.IsTrue((bool)jo["Response"]);
         }
 
         [TestMethod]

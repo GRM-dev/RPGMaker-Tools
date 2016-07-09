@@ -24,8 +24,8 @@ namespace RpgMulti.Server
         }
 
         public static List<Property> All { get; }=new List<Property>(); 
-        public static Property Url { get; } = new Property("URL","http://localhost/");
-        public static Property AppName { get; } = new Property("APP","rpg_mvxm");
+        public static Property Url { get; } = new Property("URL","http://localhost");
+        public static Property AppName { get; } = new Property("APP","rpgMVXM");
         public static Property Port { get; } = new Property("PORT","8080");
         public static Property Username { get; }=new Property("USERNAME","");
         public static Property Token { get; }=new Property("TOKEN","");
