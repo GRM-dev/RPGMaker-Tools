@@ -44,9 +44,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fluent.hibernate.H;
 import com.github.fluent.hibernate.request.HibernateRequest;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author Levvy055
- * 		
  */
 @Entity
 @Table(name = "users")
@@ -54,28 +56,47 @@ import com.github.fluent.hibernate.request.HibernateRequest;
 public class User {
 	
 	@Id
-	@GeneratedValue(
-			strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Getter
+	@Setter
 	private int id;
 	@Column(name = "f_name", unique = true, nullable = false)
+	@Getter
+	@Setter
 	private String username;
 	@Column(name = "f_pasword", nullable = false)
+	@Getter
+	@Setter
 	private String password;
 	@Column(name = "f_email", nullable = false, unique = true)
+	@Getter
+	@Setter
 	private String email;
 	@Column(name = "register_date", nullable = false)
+	@Getter
+	@Setter
 	private Date registerDate;
 	@Column(name = "time_last_active")
+	@Getter
+	@Setter
 	private Date lastActive;
 	@Column(name = "f_user_level", nullable = false)
+	@Getter
+	@Setter
 	private int level;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@Getter
+	@Setter
 	private List<Token> tokens;
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@Getter
+	@Setter
 	@Fetch(FetchMode.SUBSELECT)
 	private Set<Character> characters;
 	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id") , inverseJoinColumns = @JoinColumn(name = "friend_id", referencedColumnName = "id") )
+	@Getter
+	@Setter
+	@JoinTable(name = "friends", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "friend_id", referencedColumnName = "id"))
 	private List<User> friends;
 	public static final String USERNAME_PATTERN = "^[a-z0-9A-Z_-]{3,15}$";
 	
@@ -83,7 +104,8 @@ public class User {
 	@Path("/{username}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response register(@PathParam("username") String username, String payload) {
+	public Response register(@PathParam("username")
+	String username, String payload) {
 		if (username == null || username.isEmpty() || payload == null || payload.isEmpty()) { return Result.badRequest(true, null, username, payload); }
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -109,30 +131,30 @@ public class User {
 			return Result.exception(e);
 		}
 	}
-
+	
 	@Path("/{username}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("username") String username,
-			@QueryParam("authToken") String token) {
+	public Response get(@PathParam("username")
+	String username, @QueryParam("authToken")
+	String token) {
 		try {
 			HibernateRequest<User> request = H.<User> request(User.class);
 			List<User> userList = request.fetchJoin("friends", "characters").eq("username", username).list();
 			User user = null;
-			if (userList == null || userList.isEmpty()
-					|| (user = userList.get(0)) == null) { return Result.notFound(true, false, "User with name " + username + " was not found"); }
+			if (userList == null || userList.isEmpty() || (user = userList.get(0)) == null) { return Result.notFound(true, false, "User with name " + username + " was not found"); }
 			String res;
 			if (token != null && !token.isEmpty() && Token.verify(token, user.getId())) {
 				res = user.toString();
 				user.setLastActive(new Date());
 			}
 			else {
-				res = "{\"id\": " + user.getId() + ", \"name\": \""
-						+ user.getUsername() + "\"}";
+				res = "{\"id\": " + user.getId() + ", \"name\": \"" + user.getUsername() + "\"}";
 			}
 			System.out.println("name: " + username + "\ntoken: " + token);
 			return Result.json(res);
-		} catch (HibernateException e) {
+		}
+		catch (HibernateException e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -143,37 +165,25 @@ public class User {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response changePassword(@PathParam("username")
-	String username,
-			String payload) {
+	String username, String payload) {
 		try {
 			JSONObject jObj = new JSONObject(payload);
 			String token = jObj.getString("authToken");
-			if (!token.equals("token")) {
-				return Result.noAuth(false,true, "Wrong token: " + token);
-			}
+			if (!token.equals("token")) { return Result.noAuth(false, true, "Wrong token: " + token); }
 			username = username.toLowerCase();
-			if (!username.equals(jObj.getString("username").toLowerCase())) {
-				return Result.noAuth(false,true, "No access for that user!");
-			}
+			if (!username.equals(jObj.getString("username").toLowerCase())) { return Result.noAuth(false, true, "No access for that user!"); }
 			String oldPswd = jObj.getString("oldPassword");
 			String newPswd = jObj.getString("newPassword");
-			User user = H.<User> request(User.class).eq("username", username)
-					.first();
-			if (user == null) {
-				return Result.notFound(false,true, "User '" + username + "' not found");
-			}
-			if (!user.getPassword().equals(oldPswd)) {
-				return Result.noAuth(false,true, "Wrong credentials!");
-			}
-			if (newPswd == null || newPswd.length() <= 4) {
-				return Result.badRequest(true,
-						"Wrong Password! It should be longer than 3 letters.");
-			}
+			User user = H.<User> request(User.class).eq("username", username).first();
+			if (user == null) { return Result.notFound(false, true, "User '" + username + "' not found"); }
+			if (!user.getPassword().equals(oldPswd)) { return Result.noAuth(false, true, "Wrong credentials!"); }
+			if (newPswd == null || newPswd.length() <= 4) { return Result.badRequest(true, "Wrong Password! It should be longer than 3 letters."); }
 			user.setPassword(newPswd);
 			user.setLastActive(new Date());
 			H.saveOrUpdate(user);
 			return Result.success("Password updated");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -201,7 +211,8 @@ public class User {
 			user.setEmail(mail);
 			H.saveOrUpdate(user);
 			return Result.success("Mail updated");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -224,7 +235,8 @@ public class User {
 			if (!user.getPassword().equals(pswd)) { return Result.noAuth(false, true, "Wrong credentials!"); }
 			H.delete(user);
 			return Result.success("User '" + username + "' deleted");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return Result.exception(e);
 		}
@@ -249,24 +261,20 @@ public class User {
 		if (getClass() != obj.getClass()) return false;
 		User other = (User) obj;
 		if (email == null) {
-			if (other.email != null)
-			return false;
+			if (other.email != null) return false;
 		}
 		else if (!email.equals(other.email)) return false;
 		if (id != other.id) return false;
 		if (username == null) {
-			if (other.username != null)
-			return false;
+			if (other.username != null) return false;
 		}
 		else if (!username.equals(other.username)) return false;
 		if (password == null) {
-			if (other.password != null)
-			return false;
+			if (other.password != null) return false;
 		}
 		else if (!password.equals(other.password)) return false;
 		if (registerDate == null) {
-			if (other.registerDate != null)
-			return false;
+			if (other.registerDate != null) return false;
 		}
 		else if (!registerDate.equals(other.registerDate)) return false;
 		return true;
@@ -328,83 +336,4 @@ public class User {
 		return builder.toString();
 	}
 	
-	public int getId() {
-		return id;
-	}
-	
-	public void setId(int id) {
-		this.id = id;
-	}
-	
-	public String getUsername() {
-		return username;
-	}
-	
-	public void setUsername(String name) {
-		this.username = name;
-	}
-	
-	public Date getRegisterDate() {
-		return registerDate;
-	}
-	
-	public void setRegisterDate(Date registerDate) {
-		this.registerDate = registerDate;
-	}
-	
-	public Date getLastActive() {
-		return lastActive;
-	}
-	
-	public void setLastActive(Date lastActive) {
-		this.lastActive = lastActive;
-	}
-	
-	public String getPassword() {
-		return password;
-	}
-	
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	
-	public List<User> getFriends() {
-		return friends;
-	}
-	
-	public void setFriends(List<User> friends) {
-		this.friends = friends;
-	}
-	
-	public String getEmail() {
-		return email;
-	}
-	
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	
-	public int getLevel() {
-		return level;
-	}
-
-	public void setLevel(int level) {
-		this.level = level;
-	}
-
-	public List<Token> getTokens() {
-		return tokens;
-	}
-	
-	public void setTokens(List<Token> tokens) {
-		this.tokens = tokens;
-	}
-	
-	public Set<Character> getCharacters() {
-		return characters;
-	}
-	
-	public void setCharacters(Set<Character> characters) {
-		this.characters = characters;
-	}
 }
